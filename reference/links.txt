@@ -1,0 +1,27 @@
+https://www.johndcook.com/wavelength_to_RGB.html
+500nm -> RGB(0, 255, 145)
+
+Convert HSV to RGB for openCV values
+https://pythonexamples.org/python-colorsys-convert-hsv-to-rgb/
+
+
+https://datacarpentry.org/image-processing/
+  - tutorial
+
+Photoshop - Full explainer of pro green screen pipline
+https://smokerbambooshobby.blogspot.com/2014/09/tutorial-how-to-extract-image-using.html
+
+GUI widgets in opencv window
+https://docs.opencv.org/3.4/dc/d46/group__highgui__qt.html
+  - No longer supported
+
+
+Simple explanation of HSV/HSB
+https://bootcamp.uxdesign.cc/hsb-hsv-color-system-d14697d7c485
+
+
+Comprehensive color conversions 
+https://convertingcolors.com/
+
+Histogram Creation Process
+https://docs.opencv.org/4.x/d1/db7/tutorial_py_histogram_begins.html
