@@ -1,55 +1,77 @@
+import itertools
+from typing import Dict
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 import numpy as np
 import cv2
 from simple_image2 import SimpleImage
-import simple_image_tk
+import simple_image_tk2
 
 
 class SimpleImageWindow(tk.Toplevel):
-    root = simple_image_tk.init_tk('Image Window')
-    root.withdraw()
-    num_windows = 0
+    _window_id = itertools.count(start=1)
+    _windows: Dict[str, 'SimpleImageWindow'] = {}
 
-    def __init__(self, name):
-        super().__init__(SimpleImageWindow.root)
+    def __init__(self, name=None, descriptor=None):
+        super().__init__(simple_image_tk2.root)
+        if not name:
+            name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
+        self.descriptor = descriptor
         self.title(name)
+        self._callbacks = {}
         self.canvas = tk.Canvas(self)
-        self.canvas.pack()
         self.image = None
         self.imagetk = None
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
-        SimpleImageWindow.num_windows += 1
+        SimpleImageWindow._windows[name] = self
 
     @classmethod
-    def _window_close(cls, self):
-        self.destroy()
-        cls.num_windows -= 1
-        if cls.num_windows <= 0:
-            cls.root.destroy()
+    def update_or_create(cls, name, descriptor=None):
+        if name is not None:
+            window: SimpleImageWindow = SimpleImageWindow._windows.get(name)
+            if window:
+                window.descriptor = descriptor
+                return window
+        return cls(name, descriptor)
+
+    @classmethod
+    def _window_close(cls, window):
+        window.destroy()
+        cls._windows.pop(window.name)
+        if len(cls._windows) == 0 and simple_image_tk2.root.state() == 'withdrawn':
+            simple_image_tk2.root.destroy()
 
     def set_image(self, image):
         self.image = image.copy()
         self.canvas.config(width=image.width, height=image.height)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image.image_data))
         self.canvas.create_image(0, 0, anchor="nw", image=self.imagetk)
+        self.canvas.pack()
+
+    def move(self, x, y):
+        self.geometry(f'+{x}+{y}')
+        return self
 
 
 
 
 
 def main():
+    # root = simple_image_tk2.show_tk_root()
+
     image1 = SimpleImage('data/futuristic_city.png')
+    # image1.show('test1')
     window1 = SimpleImageWindow('test1')
     window1.set_image(image1)
+    window1.move(100, 100)
 
     image2 = SimpleImage('data/cyberpunk.png')
     window2 = SimpleImageWindow('test2')
     window2.set_image(image2)
 
-    SimpleImageWindow.root.mainloop()
+    SimpleImage.run()
 
 
 

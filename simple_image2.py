@@ -2,6 +2,9 @@ import itertools
 from typing import Dict
 import numpy as np
 import cv2 as cv
+from PIL import Image, ImageTk
+import tkinter as tk
+import simple_image_tk2
 
 
 class SimpleColor(object):
@@ -22,96 +25,50 @@ class SimpleColor(object):
         return self.b, self.g, self.r
 
 
-class SimpleImageWindow(object):
+class SimpleImageWindow(tk.Toplevel):
     _window_id = itertools.count(start=1)
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
-    def __init__(self, name=None, topmost=False, descriptor=None):
+    def __init__(self, name=None, descriptor=None):
+        super().__init__(simple_image_tk2.root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
-        cv.namedWindow(name)
-        if topmost:
-            cv.setWindowProperty(name, cv.WND_PROP_TOPMOST, 1)
-        cv.setWindowTitle(name, name)
         self.descriptor = descriptor
+        self.title(name)
         self._callbacks = {}
+        self.canvas = tk.Canvas(self)
+        self.image = None
+        self.imagetk = None
+        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
         SimpleImageWindow._windows[name] = self
 
     @classmethod
-    def update_or_create(cls, name, topmost=False, descriptor=None):
+    def update_or_create(cls, name, descriptor=None):
         if name is not None:
             window: SimpleImageWindow = SimpleImageWindow._windows.get(name)
             if window:
-                if topmost:
-                    cv.setWindowProperty(name, cv.WND_PROP_TOPMOST, 1)
                 window.descriptor = descriptor
                 return window
-        return cls(name, topmost, descriptor)
+        return cls(name, descriptor)
 
-    def set_image_data(self, image_data):
-        # f'{name} {image_data.shape[1]}x{image_data.shape[0]}'
-        param = {'window_name': self.name, 'image': image_data.copy()}
-        cv.setMouseCallback(self.name, self._show_pixel_info, param)
-        pass
+    @classmethod
+    def _window_close(cls, window):
+        window.destroy()
+        cls._windows.pop(window.name)
+        if len(cls._windows) == 0 and simple_image_tk2.root.state() == 'withdrawn':
+            simple_image_tk2.root.destroy()
 
-    @staticmethod
-    def _show_pixel_info(event, x, y, flags, param):
-        window_name = param['window_name']
-        image_data = param['image']
-        b, g, r = image_data[y][x]
-        window = SimpleImageWindow._windows.get(window_name)
-        if event == cv.EVENT_MOUSEMOVE:
-            window.invoke_callback('EVENT_MOUSEMOVE', window_name, image_data, x, y)
-        elif event == cv.EVENT_LBUTTONDOWN:
-            window.invoke_callback('EVENT_LBUTTONDOWN', window_name, image_data, x, y)
-            pos = f"{x}, {y}"
-            color = f"{r}, {g}, {b}"
-            pixel_info = f"{window_name}  pos:({pos})  color:({color})"
-            print(pixel_info)
-
-    @staticmethod
-    def _image_info_callback(window_name, image_data, x, y, params):
-        text_color = params['text_color']
-        b, g, r = image_data[y][x]
-        img = image_data.copy()
-        # pixel info text
-        text = f"X:{x:<3}  Y:{y:<3}  R:{r:<3}  G:{g:<3}  B:{b:<3}"
-        org = (5, 20)
-        font = cv.FONT_HERSHEY_PLAIN
-        font_scale = 1
-        color = text_color
-        thickness = 1
-        cv.putText(img, text, org, font, font_scale, color, thickness, cv.LINE_AA)
-        # pixel color box
-        start_point = (307, 8)
-        end_point = (317, 18)
-        # outline of box
-        color = text_color
-        thickness = 3
-        cv.rectangle(img, start_point, end_point, color, thickness)
-        # color box
-        pixel_color = (int(b), int(g), int(r))
-        thickness = -1
-        cv.rectangle(img, start_point, end_point, pixel_color, thickness)
-        cv.imshow(window_name, img)
-
-    def show_image_info(self, text_color=SimpleColor(255, 255, 255)):
-        params = {'text_color': text_color.as_tuple_bgr()}
-        self.register_callback('EVENT_MOUSEMOVE', self._image_info_callback, params)
+    def set_image(self, image):
+        self.image = image.copy()
+        self.canvas.config(width=image.width, height=image.height)
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image.image_data))
+        self.canvas.create_image(0, 0, anchor="nw", image=self.imagetk)
+        self.canvas.pack()
 
     def move(self, x, y):
-        cv.moveWindow(self.name, x, y)
+        self.geometry(f'+{x}+{y}')
         return self
-
-    def register_callback(self, name, func, params=None):
-        self._callbacks[name] = (func, params)
-
-    def invoke_callback(self, name, *args):
-        callback = self._callbacks.get(name)
-        if callback:
-            func, params = callback
-            func(*args, params)
 
 
 class SimpleImage(object):
@@ -219,11 +176,9 @@ class SimpleImage(object):
         self._img[y:y + img.height, x:x + img.width] = img._img
         return self
 
-    def show(self, window_name=None, topmost=False, descriptor=None):
-        window = SimpleImageWindow.update_or_create(window_name, topmost, descriptor)
+    def show(self, window_name=None, descriptor=None):
+        window = SimpleImageWindow.update_or_create(window_name, descriptor)
         window.set_image_data(self._img)
-        cv.imshow(window.name, self._img)
-        cv.waitKey(1)
         return window
 
     @classmethod
@@ -234,6 +189,10 @@ class SimpleImage(object):
     def wait_key_and_close_windows(cls, delay=0):
         cv.waitKey(delay*1000)
         cv.destroyAllWindows()
+
+    @classmethod
+    def run(cls):
+        simple_image_tk2.root.mainloop()
 
     class _Pixel(object):
 
@@ -291,12 +250,13 @@ class SimpleImage(object):
 
 
 def main():
-    img1 = SimpleImage('data/girl_shadows_gs.png')
-    win1 = SimpleImageWindow()
-    win1.show_image_info()
+    image1 = SimpleImage('data/futuristic_city.png')
+    image1.show('test1')
 
-    img1.show(window_name=win1.name, topmost=True)
-    SimpleImage.wait_key_and_close_windows(delay=120)
+    image2 = SimpleImage('data/cyberpunk.png')
+    image2.show()
+
+    SimpleImage.run()
 
 
 if __name__ == '__main__':

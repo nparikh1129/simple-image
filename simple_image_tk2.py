@@ -1,7 +1,13 @@
 import colorsys
 import tkinter as tk
 from tkinter import ttk
-from simple_image import SimpleImage
+
+
+root = tk.Tk()
+root.geometry("+0+0")
+root.tk.call("source", "resources/azure-ttk-theme/azure.tcl")
+root.tk.call("set_theme", "dark")
+root.withdraw()
 
 
 class SliderWithLabelAndEntry(ttk.Frame):
@@ -192,23 +198,17 @@ class ImageInfoPanel(tk.Toplevel):
         self.b_var.set(b)
 
 
-def init_tk(title=None):
-    root = tk.Tk()
-    root.title(title)
-    root.geometry("+0+0")
-    root.tk.call("source", "resources/azure-ttk-theme/azure.tcl")
-    root.tk.call("set_theme", "dark")
+def show_tk_root():
+    root.deiconify()
     return root
 
 
 def main():
-    root = init_tk()
-    root.withdraw()
-
     # color_sliders_hsb = ColorSlidersHSB(root, h=100, s=200, b=220)
     # color_sliders_rgb = ColorSlidersRGB(root, r=100, g=200, b=220)
     # color_sliders_hsb.grid(row=0, column=0)
     # color_sliders_rgb.grid(row=1, column=0, padx=(28, 0), pady=(10, 0))
+    from simple_image import SimpleImage
     img = SimpleImage('data/girl_black_dress_bs.png')
     window = img.show('image')
     ImageInfoPanel(root, window, lambda: root.destroy())
