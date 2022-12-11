@@ -117,7 +117,8 @@ class SimpleImageWindow(object):
 class SimpleImage(object):
     def __init__(self, filename=None):
         if filename:
-            self._img = cv.imread(filename)
+            img = cv.imread(filename)
+            self._img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
             self._img = np.zeros((300, 400, 3), dtype=np.uint8)
 

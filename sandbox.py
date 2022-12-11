@@ -3,13 +3,14 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import numpy as np
 import cv2
-from simple_image import SimpleImage
+from simple_image2 import SimpleImage
 import simple_image_tk
 
 
 class SimpleImageWindow(tk.Toplevel):
     root = simple_image_tk.init_tk('Image Window')
     root.withdraw()
+    num_windows = 0
 
     def __init__(self, name):
         super().__init__(SimpleImageWindow.root)
@@ -19,6 +20,15 @@ class SimpleImageWindow(tk.Toplevel):
         self.canvas.pack()
         self.image = None
         self.imagetk = None
+        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
+        SimpleImageWindow.num_windows += 1
+
+    @classmethod
+    def _window_close(cls, self):
+        self.destroy()
+        cls.num_windows -= 1
+        if cls.num_windows <= 0:
+            cls.root.destroy()
 
     def set_image(self, image):
         self.image = image.copy()
