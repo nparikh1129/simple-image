@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict
+from typing import Dict, Tuple
 import numpy as np
 import cv2 as cv
 from PIL import Image, ImageTk
@@ -37,9 +37,11 @@ class SimpleImageWindow(tk.Toplevel):
         self.descriptor = descriptor
         self.title(name)
         self._callbacks = {}
-        self.canvas = tk.Canvas(self)
+        self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
+        self.canvas.pack()
         self.image = None
         self.imagetk = None
+        self.canvas.bind('<Motion>', SimpleImageWindow._mouse_motion)
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
         SimpleImageWindow._windows[name] = self
 
@@ -59,12 +61,18 @@ class SimpleImageWindow(tk.Toplevel):
         if len(cls._windows) == 0 and simple_image_tk2.root.state() == 'withdrawn':
             simple_image_tk2.root.destroy()
 
+    @classmethod
+    def _mouse_motion(cls, event):
+        window = event.widget.master
+        image_data = window.image.image_data
+        print(image_data[event.y][event.x], f'{event.x}, {event.y}', image_data.shape)
+        print()
+
     def set_image(self, image):
         self.image = image.copy()
-        self.canvas.config(width=image.width, height=image.height)
+        self.canvas.config(width=image.width-1, height=image.height-1)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image.image_data))
         self.canvas.create_image(0, 0, anchor="nw", image=self.imagetk)
-        self.canvas.pack()
 
     def move(self, x, y):
         self.geometry(f'+{x}+{y}')
@@ -182,15 +190,6 @@ class SimpleImage(object):
         window.set_image(self)
         return window
 
-    # @classmethod
-    # def close_windows(cls):
-    #     cv.destroyAllWindows()
-    #
-    # @classmethod
-    # def wait_key_and_close_windows(cls, delay=0):
-    #     cv.waitKey(delay*1000)
-    #     cv.destroyAllWindows()
-
     @classmethod
     def run(cls):
         simple_image_tk2.root.mainloop()
@@ -252,12 +251,10 @@ class SimpleImage(object):
 
 def main():
     image1 = SimpleImage('data/girl_black_dress_bs.png')
-    image1.crop(200, 200, 400, 400)
     window1 = image1.show('test1')
-    window1.move(500, 500)
 
-    # image2 = SimpleImage('data/cyberpunk.png')
-    # image2.show()
+    image2 = SimpleImage('data/cyberpunk.png')
+    image2.show()
 
     SimpleImage.run()
 
