@@ -198,7 +198,9 @@ class ImageInfoPanel(tk.Toplevel):
         self.b_var.set(b)
 
 
-def show_tk_root():
+def show_tk_root(title=None):
+    if title:
+        root.title(title)
     root.deiconify()
     return root
 

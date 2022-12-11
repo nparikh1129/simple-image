@@ -71,6 +71,7 @@ class SimpleImageWindow(tk.Toplevel):
         return self
 
 
+# TODO: Fix bgr to rgb ordering
 class SimpleImage(object):
     def __init__(self, filename=None):
         if filename:
@@ -178,17 +179,17 @@ class SimpleImage(object):
 
     def show(self, window_name=None, descriptor=None):
         window = SimpleImageWindow.update_or_create(window_name, descriptor)
-        window.set_image_data(self._img)
+        window.set_image(self)
         return window
 
-    @classmethod
-    def close_windows(cls):
-        cv.destroyAllWindows()
-
-    @classmethod
-    def wait_key_and_close_windows(cls, delay=0):
-        cv.waitKey(delay*1000)
-        cv.destroyAllWindows()
+    # @classmethod
+    # def close_windows(cls):
+    #     cv.destroyAllWindows()
+    #
+    # @classmethod
+    # def wait_key_and_close_windows(cls, delay=0):
+    #     cv.waitKey(delay*1000)
+    #     cv.destroyAllWindows()
 
     @classmethod
     def run(cls):
@@ -250,11 +251,13 @@ class SimpleImage(object):
 
 
 def main():
-    image1 = SimpleImage('data/futuristic_city.png')
-    image1.show('test1')
+    image1 = SimpleImage('data/girl_black_dress_bs.png')
+    image1.crop(200, 200, 400, 400)
+    window1 = image1.show('test1')
+    window1.move(500, 500)
 
-    image2 = SimpleImage('data/cyberpunk.png')
-    image2.show()
+    # image2 = SimpleImage('data/cyberpunk.png')
+    # image2.show()
 
     SimpleImage.run()
 
