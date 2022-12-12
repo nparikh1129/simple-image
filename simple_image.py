@@ -4,7 +4,7 @@ import numpy as np
 import cv2 as cv
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, colorchooser
 from simple_image_tk import root, LabeledValue
 
 
@@ -44,7 +44,7 @@ class SimpleImageWindow(tk.Toplevel):
         self.infobar = SimpleImageWindow.ImageInfoBar(self)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
         self.infobar.grid(row=0, column=0, sticky='w')
-        self.canvas.grid(row=1, column=0)
+        self.canvas.grid(row=1, column=0, sticky='e')
         self.image = None
         self.imagetk = None
         self.canvas.bind('<Motion>', SimpleImageWindow._mouse_action)
@@ -66,7 +66,7 @@ class SimpleImageWindow(tk.Toplevel):
         self.canvas.config(width=image.width-1, height=image.height-1)
         image_data = cv.cvtColor(self.image.image_data, cv.COLOR_BGR2RGB)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(image_data))
-        self.canvas.create_image(0, 0, anchor="nw", image=self.imagetk)
+        self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
 
     @classmethod
     def _window_close(cls, window):

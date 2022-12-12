@@ -15,7 +15,7 @@ class GrayscaleApp(object):
         self.gs_lab_l = None
         self.window_name = 'image'
 
-        self.root = simple_image_tk.init_tk(title="Grayscale")
+        self.root = simple_image_tk.show_tk_root(title="Grayscale")
 
         self.buttons_label = ttk.Label(self.root, text="Grayscale Algorithms", font=("-size", 16))
         self.buttons_frame = ttk.Frame(self.root)
@@ -41,9 +41,7 @@ class GrayscaleApp(object):
 
         self.root.update_idletasks()
         window = self.img.show(self.window_name).move(self.root.winfo_width(), 0)
-        simple_image_tk.ImageInfoPanel(self.root, window)
         self.root.lift()
-
 
     def original(self):
         self.img.show(self.window_name)
@@ -69,10 +67,7 @@ class GrayscaleApp(object):
         self.gs_lab_l.show(self.window_name)
 
     def run(self):
-        try:
-            self.root.mainloop()
-        finally:
-            SimpleImage.close_windows()
+        self.root.mainloop()
 
 
 def main():

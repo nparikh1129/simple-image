@@ -1,6 +1,8 @@
 from tkinter import ttk
+
+import simple_image_tk
 from simple_image import SimpleImage, SimpleColor
-from simple_image_tk import init_tk, ColorSlidersRGB, SliderWithLabelAndEntry, ImageInfoPanel
+from simple_image_tk import ColorSlidersRGB, SliderWithLabelAndEntry
 import chromakey_dist
 
 
@@ -14,7 +16,7 @@ class ChromaKeyDistanceApp(object):
         self.color_bg = SimpleColor(0, 0, 0)
         self.dist_max = 0
 
-        self.root = init_tk(title="Chroma Key - Color Distance")
+        self.root = simple_image_tk.show_tk_root(title="Chroma Key - Color Distance")
 
         self.color_sliders = ColorSlidersRGB(self.root, command=self.set_color_bg)
         self.distance_slider = SliderWithLabelAndEntry(self.root, label='Distance', from_=0, to=442, value=0,
@@ -36,14 +38,10 @@ class ChromaKeyDistanceApp(object):
         self.window_name = 'image'
         self.window = self.img.show(self.window_name, descriptor='img')
         self.window.move(self.root.winfo_width(), 0)
-        ImageInfoPanel(self.root, self.window)
         self.root.lift()
 
     def run(self):
-        try:
-            self.root.mainloop()
-        finally:
-            SimpleImage.close_windows()
+        self.root.mainloop()
 
     def set_color_bg(self, rgb):
         self.color_bg = SimpleColor.from_tuple(rgb)
