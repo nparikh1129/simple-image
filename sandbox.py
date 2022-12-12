@@ -5,8 +5,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import numpy as np
 import cv2
-from simple_image2 import SimpleImage
-import simple_image_tk2
+from simple_image import SimpleImage
+import simple_image_tk
 
 
 class SimpleImageWindow(tk.Toplevel):

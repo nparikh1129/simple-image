@@ -12,7 +12,7 @@ def main():
     simp_img.image_data = img
 
     simp_img.show('grayscale')
-    SimpleImage.wait_key_and_close_windows()
+    SimpleImage.run()
 
 
 if __name__ == '__main__':

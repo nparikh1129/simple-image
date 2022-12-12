@@ -19,7 +19,7 @@ class ChromaKeyApp(object):
         self.window_name = 'image'
 
         # UI elements config
-        self.root = simple_image_tk.init_tk("Threshold Selector")
+        self.root = simple_image_tk.show_tk_root('Threshold Selector')
         self.label_l = ttk.Label(self.root, text="Lower Threshold", font=("-size", 16))
         self.color_sliders_hsb_l = simple_image_tk.ColorSlidersHSB(self.root, h=self.hsb_l[0], s=self.hsb_l[1],
                                                                  b=self.hsb_l[2], command=self.update_hsb_lower)
@@ -44,7 +44,6 @@ class ChromaKeyApp(object):
         self.root.update_idletasks()
         self.window = SimpleImage.from_image_data(img_cs).show(self.window_name, descriptor='chromascreen')
         self.window.move(self.root.winfo_width(), 0)
-        simple_image_tk.ImageInfoPanel(self.root, self.window)
         self.root.lift()
 
     def update_hsb_lower(self, hsb):
@@ -67,19 +66,13 @@ class ChromaKeyApp(object):
             si_img_cs = SimpleImage.from_image_data(self.img_cs)
             si_img_cs.show(self.window_name, descriptor='chromascreen')
 
-    def run(self):
-        try:
-            self.root.mainloop()
-        finally:
-            SimpleImage.close_windows()
-
 
 def main():
     img_cs = cv.imread('data/girl_shadows_gs.png')
     img_bg = cv.imread('data/cyberpunk.png')
     img_bg = cv.resize(img_bg, (img_cs.shape[1], img_cs.shape[0]))
     app = ChromaKeyApp(img_cs, img_bg)
-    app.run()
+    SimpleImage.run()
 
 
 if __name__ == '__main__':

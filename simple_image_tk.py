@@ -1,7 +1,24 @@
 import colorsys
 import tkinter as tk
 from tkinter import ttk
-from simple_image import SimpleImage
+
+
+root = tk.Tk()
+root.geometry("+0+0")
+root.tk.call("source", "resources/azure-ttk-theme/azure.tcl")
+root.tk.call("set_theme", "dark")
+root.withdraw()
+
+
+class LabeledValue(ttk.Frame):
+
+    def __init__(self, parent, textvariable, width, label_text='', label_color=None, value_color=None):
+        super().__init__(parent)
+        self.textvariable = textvariable
+        self.label = ttk.Label(self, text=label_text+':', font=("-size", 11), foreground=label_color)
+        self.value = ttk.Label(self, textvariable=textvariable, font=("-size", 11), width=width, foreground=value_color)
+        self.label.grid(row=0, column=0)
+        self.value.grid(row=0, column=1)
 
 
 class SliderWithLabelAndEntry(ttk.Frame):
@@ -125,95 +142,15 @@ class ColorSlidersRGB(ttk.Frame):
             self.command((r, g, b))
 
 
-class LabeledValue(ttk.Frame):
-
-    def __init__(self, parent, textvariable, width=4, label_text='', label_color=None):
-        super().__init__(parent)
-        self.textvariable = textvariable
-        self.label = ttk.Label(self, text=label_text+':', font=("-size", 13), foreground=label_color)
-        self.value = ttk.Label(self, textvariable=textvariable, font=("-size", 13), width=width)
-        self.label.grid(row=0, column=0)
-        self.value.grid(row=0, column=1)
-
-
-class ImageInfoPanel(tk.Toplevel):
-
-    def __init__(self, parent, image_window, callback=None):
-        super().__init__(parent)
-        self.title('Image Info')
-
-        self.w_var = tk.StringVar()
-        self.w_var.set('----')
-        self.w_val = LabeledValue(self, self.w_var, label_text='W')
-        self.w_val.grid(row=0, column=0)
-
-        self.h_var = tk.StringVar()
-        self.h_var.set('----')
-        self.h_val = LabeledValue(self, self.h_var, label_text='H')
-        self.h_val.grid(row=0, column=1)
-
-        self.x_var = tk.StringVar()
-        self.x_var.set('----')
-        self.x_val = LabeledValue(self, self.x_var, label_text='X')
-        self.x_val.grid(row=1, column=0)
-
-        self.y_var = tk.StringVar()
-        self.y_var.set('----')
-        self.y_val = LabeledValue(self, self.y_var, label_text='Y')
-        self.y_val.grid(row=1, column=1)
-
-        self.r_var = tk.StringVar()
-        self.r_var.set('---')
-        self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#F04506', width=3)
-        self.r_val.grid(row=1, column=2)
-
-        self.g_var = tk.StringVar()
-        self.g_var.set('---')
-        self.g_val = LabeledValue(self, self.g_var, label_text='G', label_color='#7BE300', width=3)
-        self.g_val.grid(row=1, column=3)
-
-        self.b_var = tk.StringVar()
-        self.b_var.set('---')
-        self.b_val = LabeledValue(self, self.b_var, label_text='B', label_color='#0594F0', width=3)
-        self.b_val.grid(row=1, column=4)
-
-        self.image_window = image_window
-        self.image_window.register_callback('EVENT_MOUSEMOVE', self.update_info)
-        self.protocol("WM_DELETE_WINDOW", callback)
-
-    def update_info(self, window_name, image_data, x, y, params):
-        b, g, r = image_data[y][x]
-        self.w_var.set(image_data.shape[1])
-        self.h_var.set(image_data.shape[0])
-        self.x_var.set(x)
-        self.y_var.set(y)
-        self.r_var.set(r)
-        self.g_var.set(g)
-        self.b_var.set(b)
-
-
-def init_tk(title=None):
-    root = tk.Tk()
-    root.title(title)
-    root.geometry("+0+0")
-    root.tk.call("source", "resources/azure-ttk-theme/azure.tcl")
-    root.tk.call("set_theme", "dark")
+def show_tk_root(title=None):
+    if title:
+        root.title(title)
+    root.deiconify()
     return root
 
 
 def main():
-    root = init_tk()
-    root.withdraw()
-
-    # color_sliders_hsb = ColorSlidersHSB(root, h=100, s=200, b=220)
-    # color_sliders_rgb = ColorSlidersRGB(root, r=100, g=200, b=220)
-    # color_sliders_hsb.grid(row=0, column=0)
-    # color_sliders_rgb.grid(row=1, column=0, padx=(28, 0), pady=(10, 0))
-    img = SimpleImage('data/girl_black_dress_bs.png')
-    window = img.show('image')
-    ImageInfoPanel(root, window, lambda: root.destroy())
-    root.mainloop()
-    SimpleImage.close_windows()
+    pass
 
 
 if __name__ == "__main__":
