@@ -26,19 +26,17 @@ class ChromaKeyApp(object):
         self.label_u = ttk.Label(self.root, text="Upper Threshold", font=("-size", 16))
         self.color_sliders_hsb_u = simple_image_tk.ColorSlidersHSB(self.root, h=self.hsb_u[0], s=self.hsb_u[1],
                                                                  b=self.hsb_u[2], command=self.update_hsb_upper)
-        self.buttons_frame = ttk.Frame(self.root)
-        self.swap_button = ttk.Button(self.buttons_frame, text='Compare Images', command=self.swap_images)
-        self.close_button = ttk.Button(self.buttons_frame, text='Close', command=self.root.destroy)
+        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.swap_button = ttk.Button(self.buttons_bar, text='Compare Images', command=self.swap_images)
+        self.close_button = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
 
         # UI elements layout
         self.label_l.grid(row=0, column=0, columnspan=1, pady=(10, 0), padx=(0, 90))
         self.color_sliders_hsb_l.grid(row=1, column=0)
         self.label_u.grid(row=2, column=0, columnspan=1, pady=(30, 0), padx=(0, 90))
         self.color_sliders_hsb_u.grid(row=3, column=0, pady=(10, 0))
-        self.buttons_frame.grid(row=4, column=0, pady=(40, 10))
-        # Buttons frame buttons
-        self.swap_button.grid(row=0, column=0, padx=(0, 16))
-        self.close_button.grid(row=0, column=1)
+        self.buttons_bar.grid(row=4, column=0, pady=(30, 0), sticky='ew')
+        self.buttons_bar.layout_buttons()
 
         # Windows layout
         self.root.update_idletasks()

@@ -21,18 +21,15 @@ class ChromaKeyDistanceApp(object):
         self.color_sliders = ColorSlidersRGB(self.root, command=self.set_color_bg)
         self.distance_slider = SliderWithLabelAndEntry(self.root, label='Distance', from_=0, to=442, value=0,
                                                        command=self.set_color_dist)
-        self.button_frame = ttk.Frame(self.root)
-        self.run_button = ttk.Button(self.button_frame, text="Run Chromakey", command=self.run_chromakey)
-        self.swap_button = ttk.Button(self.button_frame, text='Compare Images', command=self.swap_images)
-        self.close_button = ttk.Button(self.button_frame, text='Close', command=self.root.destroy)
+        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.run_button = ttk.Button(self.buttons_bar, text="Run Chromakey", command=self.run_chromakey)
+        self.swap_button = ttk.Button(self.buttons_bar, text='Compare Images', command=self.swap_images)
+        self.close_button = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
 
         self.color_sliders.grid(row=0, column=0, padx=(18, 0))
         self.distance_slider.grid(row=1, column=0, sticky='ew', padx=(10, 0))
-        self.button_frame.grid(row=2, column=0, pady=(40, 10))
-
-        self.run_button.grid(row=0, column=0, padx=(0, 16))
-        self.swap_button.grid(row=0, column=1, padx=(0, 16))
-        self.close_button.grid(row=0, column=3)
+        self.buttons_bar.grid(row=2, column=0, pady=(30, 0), sticky='ew')
+        self.buttons_bar.layout_buttons()
 
         self.root.update_idletasks()
         self.window_name = 'image'

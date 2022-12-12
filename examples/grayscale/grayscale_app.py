@@ -18,29 +18,31 @@ class GrayscaleApp(object):
         self.root = simple_image_tk.show_tk_root(title="Grayscale")
 
         self.buttons_label = ttk.Label(self.root, text="Grayscale Algorithms", font=("-size", 16))
+        # Algorithm buttons
         self.buttons_frame = ttk.Frame(self.root)
-        self.separator = ttk.Separator(self.root, orient=tk.HORIZONTAL)
-        self.button_close = ttk.Button(self.root, text='Close', command=self.root.destroy)
-        # Buttons frame buttons
-        self.button_img = ttk.Button(self.buttons_frame, text='Original', command=self.original)
+        self.button_img_clr = ttk.Button(self.buttons_frame, text='Original', command=self.original)
         self.button_img_lts = ttk.Button(self.buttons_frame, text='Lightness', command=self.lightness)
         self.button_img_int = ttk.Button(self.buttons_frame, text='Intensity', command=self.intensity)
         self.button_img_lum = ttk.Button(self.buttons_frame, text='Luma 601', command=self.luma)
         self.button_img_lab = ttk.Button(self.buttons_frame, text='CIELAB L*', command=self.lab_l)
+        # Buttons bar buttons
+        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.button_close = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
 
         self.buttons_label.grid(row=0, column=0, pady=(15, 5), padx=(25, 25))
+        # Buttons frame
         self.buttons_frame.grid(row=1, column=0, padx=(20, 20), pady=(20, 20))
-        self.separator.grid(row=2, column=0, sticky='ew', pady=(10, 0))
-        self.button_close.grid(row=3, column=0, pady=(15, 15))
-        # Button frame buttons
-        self.button_img.grid(row=0, column=0, pady=(0, 5))
+        self.button_img_clr.grid(row=0, column=0, pady=(0, 5))
         self.button_img_lts.grid(row=1, column=0, pady=(5, 5))
         self.button_img_int.grid(row=2, column=0, pady=(5, 5))
         self.button_img_lum.grid(row=3, column=0, pady=(5, 5))
         self.button_img_lab.grid(row=4, column=0, pady=(5, 0))
+        # Buttons bar
+        self.buttons_bar.grid(row=2, column=0, pady=(5, 0), sticky='ew')
+        self.buttons_bar.layout_buttons()
 
         self.root.update_idletasks()
-        window = self.img.show(self.window_name).move(self.root.winfo_width(), 0)
+        self.img.show(self.window_name).move(self.root.winfo_width(), 0)
         self.root.lift()
 
     def original(self):

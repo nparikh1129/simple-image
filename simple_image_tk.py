@@ -21,6 +21,31 @@ class LabeledValue(ttk.Frame):
         self.value.grid(row=0, column=1)
 
 
+class ButtonsBar(ttk.Frame):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
+        self.buttons = []
+
+    def layout_buttons(self):
+        for child in self.winfo_children():
+            if isinstance(child, ttk.Button):
+                self.buttons.append(child)
+        self.separator.grid(row=0, column=0, columnspan=len(self.buttons)+2, sticky='ew', pady=(10, 0))
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(len(self.buttons)+1, weight=1)
+        for i, button in enumerate(self.buttons):
+            padx = (0, 16)
+            if i == len(self.buttons)-1:
+                padx=(0, 0)
+            button.grid(row=1, column=i+1, padx=padx, pady=(15, 15))
+
+
+
+
+
 class SliderWithLabelAndEntry(ttk.Frame):
 
     def __init__(self, parent, label='', from_=0, to=100, value=0, length=200, variable=None, command=None):
