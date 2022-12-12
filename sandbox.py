@@ -14,7 +14,7 @@ class SimpleImageWindow(tk.Toplevel):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
     def __init__(self, name=None, descriptor=None):
-        super().__init__(simple_image_tk2.root)
+        super().__init__(root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
@@ -40,8 +40,8 @@ class SimpleImageWindow(tk.Toplevel):
     def _window_close(cls, window):
         window.destroy()
         cls._windows.pop(window.name)
-        if len(cls._windows) == 0 and simple_image_tk2.root.state() == 'withdrawn':
-            simple_image_tk2.root.destroy()
+        if len(cls._windows) == 0 and root.state() == 'withdrawn':
+            root.destroy()
 
     def set_image(self, image):
         self.image = image.copy()
@@ -59,7 +59,7 @@ class SimpleImageWindow(tk.Toplevel):
 
 
 def main():
-    # root = simple_image_tk2.show_tk_root()
+    # root = show_tk_root()
 
     image1 = SimpleImage('data/futuristic_city.png')
     # image1.show('test1')

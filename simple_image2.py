@@ -1,10 +1,11 @@
 import itertools
-from typing import Dict, Tuple
+from typing import Dict, Any
 import numpy as np
 import cv2 as cv
 from PIL import Image, ImageTk
 import tkinter as tk
-import simple_image_tk2
+from tkinter import ttk
+from simple_image_tk2 import root, LabeledValue
 
 
 class SimpleColor(object):
@@ -30,20 +31,25 @@ class SimpleImageWindow(tk.Toplevel):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
     def __init__(self, name=None, descriptor=None):
-        super().__init__(simple_image_tk2.root)
+        super().__init__(root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
-        self.descriptor = descriptor
         self.title(name)
-        self._callbacks = {}
+        self.descriptor = descriptor
+        self._configure_widets()
+        SimpleImageWindow._windows[name] = self
+
+    def _configure_widets(self):
+        self.infobar = SimpleImageWindow.ImageInfoBar(self)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
-        self.canvas.pack()
+        self.infobar.grid(row=0, column=0, sticky='w')
+        self.canvas.grid(row=1, column=0)
         self.image = None
         self.imagetk = None
         self.canvas.bind('<Motion>', SimpleImageWindow._mouse_motion)
+        self.canvas.bind('<Leave>', SimpleImageWindow._leave_window)
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
-        SimpleImageWindow._windows[name] = self
 
     @classmethod
     def update_or_create(cls, name, descriptor=None):
@@ -54,32 +60,76 @@ class SimpleImageWindow(tk.Toplevel):
                 return window
         return cls(name, descriptor)
 
-    @classmethod
-    def _window_close(cls, window):
-        window.destroy()
-        cls._windows.pop(window.name)
-        if len(cls._windows) == 0 and simple_image_tk2.root.state() == 'withdrawn':
-            simple_image_tk2.root.destroy()
-
-    @classmethod
-    def _mouse_motion(cls, event):
-        window = event.widget.master
-        image_data = window.image.image_data
-        print(image_data[event.y][event.x], f'{event.x}, {event.y}', image_data.shape)
-        print()
-
     def set_image(self, image):
         self.image = image.copy()
         self.canvas.config(width=image.width-1, height=image.height-1)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image.image_data))
         self.canvas.create_image(0, 0, anchor="nw", image=self.imagetk)
 
+    @classmethod
+    def _window_close(cls, window):
+        window.destroy()
+        cls._windows.pop(window.name)
+        if len(cls._windows) == 0 and root.state() == 'withdrawn':
+            root.destroy()
+
+    @classmethod
+    def _mouse_motion(cls, event):
+        window = event.widget.master
+        image_data = window.image.image_data
+        r, g, b = image_data[event.y][event.x]
+        x, y = event.x, event.y
+        w, h = image_data.shape[1], image_data.shape[0]
+        window.infobar.update_info(r, g, b, x, y, w, h)
+
+    @classmethod
+    def _leave_window(cls, event):
+        window = event.widget.master
+        window.infobar.update_info()
+
     def move(self, x, y):
         self.geometry(f'+{x}+{y}')
         return self
 
+    class ImageInfoBar(ttk.Frame):
 
-# TODO: Fix bgr to rgb ordering
+        def __init__(self, parent):
+            super().__init__(parent)
+    
+            self.w_var = tk.StringVar(self, '----')
+            self.h_var = tk.StringVar(self, '----')
+            self.x_var = tk.StringVar(self, '----')
+            self.y_var = tk.StringVar(self, '----')
+            self.r_var = tk.StringVar(self, '---')
+            self.g_var = tk.StringVar(self, '---')
+            self.b_var = tk.StringVar(self, '---')
+    
+            self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#F04506', value_color='#C9C9C9', width=3)
+            self.g_val = LabeledValue(self, self.g_var, label_text='G', label_color='#7BE300', value_color='#C9C9C9', width=3)
+            self.b_val = LabeledValue(self, self.b_var, label_text='B', label_color='#0594F0', value_color='#C9C9C9', width=3)
+            self.x_val = LabeledValue(self, self.x_var, label_text='X', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+            self.y_val = LabeledValue(self, self.y_var, label_text='Y', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+            self.w_val = LabeledValue(self, self.w_var, label_text='W', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+            self.h_val = LabeledValue(self, self.h_var, label_text='H', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+    
+            self.r_val.grid(row=0, column=0)
+            self.g_val.grid(row=0, column=1)
+            self.b_val.grid(row=0, column=2)
+            self.x_val.grid(row=0, column=3)
+            self.y_val.grid(row=0, column=4)
+            self.w_val.grid(row=0, column=5)
+            self.h_val.grid(row=0, column=6)
+    
+        def update_info(self, r='---', g='---', b='---', x='----', y='----', w='----', h='----'):
+            self.r_var.set(r)
+            self.g_var.set(g)
+            self.b_var.set(b)
+            self.x_var.set(x)
+            self.y_var.set(y)
+            self.w_var.set(w)
+            self.h_var.set(h)
+
+
 class SimpleImage(object):
     def __init__(self, filename=None):
         if filename:
@@ -93,7 +143,7 @@ class SimpleImage(object):
         img_blank = cls()
         img_blank._img = np.zeros((height, width, 3), dtype=np.uint8)
         if color:
-            img_blank._img[:] = (color.b, color.g, color.r)
+            img_blank._img[:] = (color.r, color.g, color.b)
         return img_blank
 
     @classmethod
@@ -160,7 +210,7 @@ class SimpleImage(object):
 
     def add_border(self, top=0, bottom=0, left=0, right=0, color=SimpleColor(0, 0, 0)):
         self._img = cv.copyMakeBorder(self._img, top, bottom, left, right, cv.BORDER_CONSTANT, None,
-                                      value=(color.b, color.g, color.r))
+                                      value=(color.r, color.g, color.b))
         return self
 
     def add_border_centered(self, width, height, color=SimpleColor(0, 0, 0)):
@@ -192,7 +242,7 @@ class SimpleImage(object):
 
     @classmethod
     def run(cls):
-        simple_image_tk2.root.mainloop()
+        root.mainloop()
 
     class _Pixel(object):
 
@@ -204,11 +254,11 @@ class SimpleImage(object):
 
         @property
         def r(self):
-            return int(self._value[2])
+            return int(self._value[0])
 
         @r.setter
         def r(self, val):
-            self._value[2] = val
+            self._value[0] = val
 
         @property
         def g(self):
@@ -220,11 +270,11 @@ class SimpleImage(object):
 
         @property
         def b(self):
-            return int(self._value[0])
+            return int(self._value[2])
 
         @b.setter
         def b(self, val):
-            self._value[0] = val
+            self._value[2] = val
 
         def __str__(self):
             return f"x:{self.x} y:{self.y} r:{self.r} g:{self.g} b:{self.b}"

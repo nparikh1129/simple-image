@@ -63,7 +63,7 @@ class ChromaKeyDistanceApp(object):
 
 
 def main():
-    img_cs = SimpleImage('data/girl_black_dress_bs.png')
+    img_cs = SimpleImage('data/girl_shadows_gs.png')
     img_bg = SimpleImage('data/cyberpunk.png')
     #TODO: Resize images to match
     app = ChromaKeyDistanceApp(img_cs, img_bg)
