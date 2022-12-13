@@ -2,6 +2,7 @@ import colorsys
 import tkinter as tk
 from tkinter import ttk, colorchooser
 
+# TODO: Use round() instead of int() to maintain accuracy
 
 root = tk.Tk()
 root.geometry("+0+0")
@@ -139,6 +140,8 @@ class ColorSlidersHSB(ttk.Frame):
 
     def _choose_color(self, event):
         color = colorchooser.askcolor()
+        if not color or not color[0]:
+            return
         h, s, b = self._rgb_to_hsv(*color[0])
         self.slider_h.set(h)
         self.slider_s.set(s)
@@ -167,6 +170,8 @@ class ColorSlidersRGB(ttk.Frame):
         self.slider_b.grid(row=2, column=0, sticky='e', padx=8, pady=(2, 8))
         self.color.grid(row=0, column=3, rowspan=3, sticky='e', padx=10, pady=8)
 
+        self.color.bind('<Button>', self._choose_color)
+
         self.command = None
         self._set_color()
         self.command = command
@@ -177,6 +182,15 @@ class ColorSlidersRGB(ttk.Frame):
         self.color.create_rectangle(0, 0, 105, 105, fill=color_str)
         if self.command:
             self.command((r, g, b))
+
+    def _choose_color(self, event):
+        color = colorchooser.askcolor()
+        if not color or not color[0]:
+            return
+        r, g, b = color[0]
+        self.slider_r.set(round(r))
+        self.slider_g.set(round(g))
+        self.slider_b.set(round(b))
 
 
 def show_tk_root(title=None):
