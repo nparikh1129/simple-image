@@ -32,7 +32,7 @@ class ChromaKeyDistanceApp(object):
         self.buttons_bar.layout_buttons()
 
         self.root.update_idletasks()
-        self.window_name = 'image'
+        self.window_name = 'Chroma Screen Image'
         self.window = self.img.show(self.window_name, descriptor='img')
         self.window.move(self.root.winfo_width(), 0)
         self.root.lift()

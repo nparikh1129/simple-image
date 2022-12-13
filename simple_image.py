@@ -43,7 +43,7 @@ class SimpleImageWindow(tk.Toplevel):
     def _configure_widets(self):
         self.infobar = SimpleImageWindow.ImageInfoBar(self)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
-        self.infobar.grid(row=0, column=0, sticky='w')
+        self.infobar.grid(row=0, column=0, sticky='ew')
         self.canvas.grid(row=1, column=0, sticky='e')
         self.image = None
         self.imagetk = None
@@ -87,7 +87,9 @@ class SimpleImageWindow(tk.Toplevel):
     @classmethod
     def _leave_window(cls, event):
         window = event.widget.master
-        window.infobar.update_info()
+        image_data = window.image.image_data
+        w, h = image_data.shape[1], image_data.shape[0]
+        window.infobar.update_info(w=w, h=h)
 
     def move(self, x, y):
         self.geometry(f'+{x}+{y}')
@@ -106,21 +108,29 @@ class SimpleImageWindow(tk.Toplevel):
             self.g_var = tk.StringVar(self, '---')
             self.b_var = tk.StringVar(self, '---')
 
-            self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#F04506', value_color='#C9C9C9', width=3)
+            self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#FF4800', value_color='#C9C9C9', width=3)
             self.g_val = LabeledValue(self, self.g_var, label_text='G', label_color='#7BE300', value_color='#C9C9C9', width=3)
-            self.b_val = LabeledValue(self, self.b_var, label_text='B', label_color='#0594F0', value_color='#C9C9C9', width=3)
+            self.b_val = LabeledValue(self, self.b_var, label_text='B', label_color='#019CFF', value_color='#C9C9C9', width=3)
             self.x_val = LabeledValue(self, self.x_var, label_text='X', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
             self.y_val = LabeledValue(self, self.y_var, label_text='Y', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
             self.w_val = LabeledValue(self, self.w_var, label_text='W', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
             self.h_val = LabeledValue(self, self.h_var, label_text='H', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
 
-            self.r_val.grid(row=0, column=0)
-            self.g_val.grid(row=0, column=1)
-            self.b_val.grid(row=0, column=2)
-            self.x_val.grid(row=0, column=3)
-            self.y_val.grid(row=0, column=4)
-            self.w_val.grid(row=0, column=5)
-            self.h_val.grid(row=0, column=6)
+            self.cb_img = ImageTk.PhotoImage(Image.open('resources/colorwheel.png').resize((12, 12)))
+            self.color_button = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=self.cb_img.width(),
+                                          height=self.cb_img.height())
+            self.color_button.create_image(0, 0, anchor='nw', image=self.cb_img)
+            self.color_button.bind('<Button>', lambda event: print(colorchooser.askcolor()))
+
+            self.r_val.grid(row=0, column=0, padx=(8, 4))
+            self.g_val.grid(row=0, column=1, padx=(0, 4))
+            self.b_val.grid(row=0, column=2, padx=(0, 4))
+            self.x_val.grid(row=0, column=3, padx=(10, 2))
+            self.y_val.grid(row=0, column=4, padx=(0, 4))
+            self.w_val.grid(row=0, column=5, padx=(8, 2))
+            self.h_val.grid(row=0, column=6, padx=(0, 0))
+            self.color_button.grid(row=0, column=7, sticky='e', padx=(0, 8))
+            self.grid_columnconfigure(7, weight=1)
 
         def update_info(self, r='---', g='---', b='---', x='----', y='----', w='----', h='----'):
             self.r_var.set(r)

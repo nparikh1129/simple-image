@@ -16,7 +16,7 @@ class ChromaKeyApp(object):
         self.img_hsb = cv.cvtColor(img_cs, cv.COLOR_BGR2HSV)
         self.hsb_l = np.array([0, 0, 0])
         self.hsb_u = np.array([0, 0, 0])
-        self.window_name = 'image'
+        self.window_name = 'Chroma Screen Image'
 
         # UI elements config
         self.root = simple_image_tk.show_tk_root('Threshold Selector')

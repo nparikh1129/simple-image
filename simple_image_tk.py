@@ -1,6 +1,6 @@
 import colorsys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, colorchooser
 
 
 root = tk.Tk()
@@ -15,8 +15,8 @@ class LabeledValue(ttk.Frame):
     def __init__(self, parent, textvariable, width, label_text='', label_color=None, value_color=None):
         super().__init__(parent)
         self.textvariable = textvariable
-        self.label = ttk.Label(self, text=label_text+':', font=("-size", 11), foreground=label_color)
-        self.value = ttk.Label(self, textvariable=textvariable, font=("-size", 11), width=width, foreground=value_color)
+        self.label = ttk.Label(self, text=label_text+':', font=("-size", 10), foreground=label_color)
+        self.value = ttk.Label(self, textvariable=textvariable, font=("-size", 10), width=width, foreground=value_color)
         self.label.grid(row=0, column=0)
         self.value.grid(row=0, column=1)
 
@@ -41,9 +41,6 @@ class ButtonsBar(ttk.Frame):
             if i == len(self.buttons)-1:
                 padx=(0, 0)
             button.grid(row=1, column=i+1, padx=padx, pady=(15, 15))
-
-
-
 
 
 class SliderWithLabelAndEntry(ttk.Frame):
@@ -113,6 +110,8 @@ class ColorSlidersHSB(ttk.Frame):
         self.slider_b.grid(row=2, column=0, sticky='e', padx=8, pady=(2, 8))
         self.color.grid(row=0, column=3, rowspan=3, sticky='e', padx=10, pady=8)
 
+        self.color.bind('<Button>', self._choose_color)
+
         self.command = None
         self._set_color()
         self.command = command
@@ -125,12 +124,25 @@ class ColorSlidersHSB(ttk.Frame):
         rgb_hex = f"#{r:02x}{g:02x}{b:02x}"
         return rgb_hex
 
+    @staticmethod
+    def _rgb_to_hsv(r, g, b):
+        h, s, v = colorsys.rgb_to_hsv(r, g, b)
+        h, s, v = round(h*179), round(s*255), round(v)
+        return h, s, v
+
     def _set_color(self, *args):
         h, s, b = self.slider_h.get(), self.slider_s.get(), self.slider_b.get()
         color_str = self._hsv_to_rgb_hex(h, s, b)
         self.color.create_rectangle(0, 0, 105, 105, fill=color_str)
         if self.command:
             self.command((h, s, b))
+
+    def _choose_color(self, event):
+        color = colorchooser.askcolor()
+        h, s, b = self._rgb_to_hsv(*color[0])
+        self.slider_h.set(h)
+        self.slider_s.set(s)
+        self.slider_b.set(b)
 
 
 class ColorSlidersRGB(ttk.Frame):
