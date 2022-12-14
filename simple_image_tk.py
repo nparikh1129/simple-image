@@ -1,4 +1,8 @@
 import colorsys
+import numpy as np
+import cv2
+from PIL import Image, ImageTk
+import matplotlib.colors as mcolors
 import tkinter as tk
 from tkinter import ttk, colorchooser
 
@@ -20,6 +24,53 @@ class LabeledValue(ttk.Frame):
         self.value = ttk.Label(self, textvariable=textvariable, font=("-size", 10), width=width, foreground=value_color)
         self.label.grid(row=0, column=0)
         self.value.grid(row=0, column=1)
+
+
+class ImageInfoBar(ttk.Frame):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.w_var = tk.StringVar(self, '----')
+        self.h_var = tk.StringVar(self, '----')
+        self.x_var = tk.StringVar(self, '----')
+        self.y_var = tk.StringVar(self, '----')
+        self.r_var = tk.StringVar(self, '---')
+        self.g_var = tk.StringVar(self, '---')
+        self.b_var = tk.StringVar(self, '---')
+
+        self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#FF4800', value_color='#C9C9C9', width=3)
+        self.g_val = LabeledValue(self, self.g_var, label_text='G', label_color='#7BE300', value_color='#C9C9C9', width=3)
+        self.b_val = LabeledValue(self, self.b_var, label_text='B', label_color='#019CFF', value_color='#C9C9C9', width=3)
+        self.x_val = LabeledValue(self, self.x_var, label_text='X', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+        self.y_val = LabeledValue(self, self.y_var, label_text='Y', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+        self.w_val = LabeledValue(self, self.w_var, label_text='W', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+        self.h_val = LabeledValue(self, self.h_var, label_text='H', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
+
+        self.cb_img = ImageTk.PhotoImage(Image.open('resources/colorwheel.png').resize((12, 12)))
+        self.color_button = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=self.cb_img.width(),
+                                      height=self.cb_img.height())
+        self.color_button.create_image(0, 0, anchor='nw', image=self.cb_img)
+        self.color_button.bind('<Button>', lambda event: print(colorchooser.askcolor()))
+
+        self.r_val.grid(row=0, column=0, padx=(8, 4))
+        self.g_val.grid(row=0, column=1, padx=(0, 4))
+        self.b_val.grid(row=0, column=2, padx=(0, 4))
+        self.x_val.grid(row=0, column=3, padx=(10, 2))
+        self.y_val.grid(row=0, column=4, padx=(0, 4))
+        self.w_val.grid(row=0, column=5, padx=(8, 2))
+        self.h_val.grid(row=0, column=6, padx=(0, 0))
+        self.color_button.grid(row=0, column=7, sticky='e', padx=(0, 8))
+        self.grid_columnconfigure(7, weight=1)
+
+    def update_info(self, r='---', g='---', b='---', x='----', y='----', w='----', h='----'):
+        self.r_var.set(r)
+        self.g_var.set(g)
+        self.b_var.set(b)
+        self.x_var.set(x)
+        self.y_var.set(y)
+        self.w_var.set(w)
+        self.h_var.set(h)
 
 
 class ButtonsBar(ttk.Frame):
@@ -87,6 +138,32 @@ class SliderWithLabelAndEntry(ttk.Frame):
 
     def set(self, value):
         return self._var.set(value)
+
+
+class ColorGradientHSB(ttk.Frame):
+
+    def __init__(self, parent, size):
+        super().__init__(parent)
+        self.size = size
+        self.canvas = tk.Canvas(self, height=size, width=size, bg='#777777', bd=2)
+        self.canvas.pack()
+        self.image_data = np.zeros((size, size, 3), dtype=np.uint8)
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+        self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
+
+    @staticmethod
+    def gradient_hsb(ul, ur, ll, lr, size):
+        row_first = np.linspace(ul, ur, num=size)
+        row_last = np.linspace(ll, lr, num=size)
+        hsv = np.linspace(row_first, row_last, num=size)
+        rgb = mcolors.hsv_to_rgb(hsv)
+        image_data = (rgb*255).astype('uint8')
+        return image_data
+
+    def update_gradient(self, ul, ur, ll, lr):
+        self.image_data = self.gradient_hsb(ul, ur, ll, lr, self.size)
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+        self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
 
 
 class ColorSlidersHSB(ttk.Frame):

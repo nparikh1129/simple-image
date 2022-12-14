@@ -25,3 +25,10 @@ https://convertingcolors.com/
 
 Histogram Creation Process
 https://docs.opencv.org/4.x/d1/db7/tutorial_py_histogram_begins.html
+
+
+HSV <-> RGB conversion in numpy arrays
+https://www.icaml.org/canon/data/images-videos/HSV_color_space/HSV_color_space.html
+
+Perceptual colorspace tools
+https://github.com/njsmith/colorspacious
