@@ -140,12 +140,51 @@ class SliderWithLabelAndEntry(ttk.Frame):
         return self._var.set(value)
 
 
+class ColorBoxRGB(ttk.Frame):
+
+    def __init__(self, parent, size=128):
+        super().__init__(parent)
+        self.size = size
+        self.canvas = tk.Canvas(self, height=size-1, width=size-1, bg='#777777', bd=2, highlightthickness=0)
+        self.color_box = self.canvas.create_rectangle(0, 0, self.size, self.size, fill='#000000')
+        self.canvas.pack()
+
+    def set_color(self, r, g, b):
+        color = f"#{r:02x}{g:02x}{b:02x}"
+        self.canvas.itemconfig(self.color_box, fill=color)
+
+
+class ColorGradientBoxRGB(ttk.Frame):
+
+    def __init__(self, parent, size=128):
+        super().__init__(parent)
+        self.size = size
+        self.canvas = tk.Canvas(self, height=size-1, width=size-1, bg='#777777', bd=2, highlightthickness=0)
+        self.canvas.pack()
+        self.image_data = np.zeros((size, size, 3), dtype=np.uint8)
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+        self.gradient_box = self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
+
+    @staticmethod
+    def gradient_rgb(ul, ur, ll, lr, size):
+        row_first = np.linspace(ul, ur, num=size)
+        row_last = np.linspace(ll, lr, num=size)
+        gradient = np.linspace(row_first, row_last, num=size)
+        image_data = gradient.astype('uint8')
+        return image_data
+
+    def set_gradient(self, ul, ur, ll, lr):
+        self.image_data = self.gradient_rgb(ul, ur, ll, lr, self.size)
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+        self.canvas.itemconfig(self.gradient_box, image=self.imagetk)
+
+
 class ColorGradientHSB(ttk.Frame):
 
     def __init__(self, parent, size):
         super().__init__(parent)
         self.size = size
-        self.canvas = tk.Canvas(self, height=size, width=size, bg='#777777', bd=2)
+        self.canvas = tk.Canvas(self, height=size-1, width=size-1, bg='#777777', bd=2, highlightthickness=0)
         self.canvas.pack()
         self.image_data = np.zeros((size, size, 3), dtype=np.uint8)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
