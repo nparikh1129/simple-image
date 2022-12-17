@@ -48,13 +48,13 @@ def main():
     img_gs_weighted_avg = luma601(img.copy())
     img_gs_lab_l = cielab_lightness(img.copy())
 
-    img.show('original', topmost=True)
-    img_gs_lum.show('luminosity', topmost=True).move(640, 0)
-    img_gs_avg.show('average', topmost=True).move(0, 498)
-    img_gs_weighted_avg.show('weighted average', topmost=True).move(640, 498)
-    img_gs_lab_l.show('image', topmost=True)
+    img.show('original')
+    img_gs_lum.show('luminosity').move(640, 0)
+    img_gs_avg.show('average').move(0, 498)
+    img_gs_weighted_avg.show('weighted average').move(640, 498)
+    img_gs_lab_l.show('image')
 
-    SimpleImage.wait_key_and_close_windows()
+    SimpleImage.run()
 
 
 if __name__ == '__main__':

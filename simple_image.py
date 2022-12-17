@@ -53,7 +53,7 @@ class SimpleImageWindow(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
 
     @classmethod
-    def update_or_create(cls, name, descriptor=None):
+    def _update_or_create(cls, name, descriptor=None):
         if name is not None:
             window: SimpleImageWindow = SimpleImageWindow._windows.get(name)
             if window:
@@ -61,11 +61,12 @@ class SimpleImageWindow(tk.Toplevel):
                 return window
         return cls(name, descriptor)
 
-    def set_image(self, image):
+    def set_image(self, image, create):
         self.image = image.copy()
         self.canvas.config(width=image.width-1, height=image.height-1)
         image_data = cv.cvtColor(self.image.image_data, cv.COLOR_BGR2RGB)
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(image_data))
+        # TODO: Update the canvas image instead of creating if the canvas image already exists
         self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
 
     @classmethod
@@ -112,10 +113,23 @@ class SimpleImage(object):
         return img_blank
 
     @classmethod
-    def from_image_data(cls, image_data: np.ndarray):
+    def from_image_data(cls, image_data: np.ndarray, mode='BGR', normalized=False):
+        image_data = image_data.copy()
+        if mode == 'RGB':
+            if normalized:
+                image_data = (image_data*255).astype(dtype=np.uint8)
+            image_data = cv.cvtColor(image_data, cv.COLOR_RGB2BGR)
         img = cls()
         img._img = image_data
         return img
+
+    def converted_image_data(self, mode='BGR', normalized=False):
+        image_data = self._img.copy()
+        if mode == 'RGB':
+            image_data = cv.cvtColor(image_data, cv.COLOR_BGR2RGB)
+            if normalized:
+                image_data = image_data/255
+        return image_data
 
     @property
     def height(self):
@@ -201,7 +215,7 @@ class SimpleImage(object):
         return self
 
     def show(self, window_name=None, descriptor=None):
-        window = SimpleImageWindow.update_or_create(window_name, descriptor)
+        window = SimpleImageWindow._update_or_create(window_name, descriptor)
         window.set_image(self)
         return window
 

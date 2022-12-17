@@ -32,3 +32,6 @@ https://www.icaml.org/canon/data/images-videos/HSV_color_space/HSV_color_space.h
 
 Perceptual colorspace tools
 https://github.com/njsmith/colorspacious
+
+Color blindess filters
+https://github.com/joergdietrich/daltonize
