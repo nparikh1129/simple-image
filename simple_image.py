@@ -30,13 +30,13 @@ class SimpleImageWindow(tk.Toplevel):
     _window_id = itertools.count(start=1)
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
-    def __init__(self, name=None, descriptor=None):
+    def __init__(self, name=None, tag=None):
         super().__init__(root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
         self.title(name)
-        self.descriptor = descriptor
+        self.tag = tag
         self._configure_widets()
         SimpleImageWindow._windows[name] = self
 
@@ -53,13 +53,13 @@ class SimpleImageWindow(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
 
     @classmethod
-    def _update_or_create(cls, name, descriptor=None):
+    def _update_or_create(cls, name, tag=None):
         if name is not None:
             window: SimpleImageWindow = SimpleImageWindow._windows.get(name)
             if window:
-                window.descriptor = descriptor
+                window.tag = tag
                 return window
-        return cls(name, descriptor)
+        return cls(name, tag)
 
     def set_image(self, image):
         self.image = image.copy()
@@ -213,8 +213,8 @@ class SimpleImage(object):
         self._img[y:y + img.height, x:x + img.width] = img._img
         return self
 
-    def show(self, window_name=None, descriptor=None):
-        window = SimpleImageWindow._update_or_create(window_name, descriptor)
+    def show(self, window_name=None, tag=None):
+        window = SimpleImageWindow._update_or_create(window_name, tag)
         window.set_image(self)
         return window
 

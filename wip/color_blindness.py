@@ -60,15 +60,15 @@ class ColorBlindness(ttk.Frame):
         img_cb = np.clip(img_cb, 0, 1)
         image_data_cb = (img_cb*255).astype(dtype=np.uint8)
         image = Image.fromarray(image_data_cb)
-        ColorBlindness.image_cache[severity] = image
-        return image
+        imagetk_cb = ImageTk.PhotoImage(image)
+        ColorBlindness.image_cache[severity] = imagetk_cb
+        return imagetk_cb
 
     def update(self, severity=50):
         severity = int(severity)
-        image = ColorBlindness.image_cache.get(severity)
-        if not image:
-            image = self.generate_cb_image(severity)
-        self.imagetk_cb = ImageTk.PhotoImage(image)
+        self.imagetk_cb = ColorBlindness.image_cache.get(severity)
+        if not self.imagetk_cb:
+            self.imagetk_cb = self.generate_cb_image(severity)
         self.canvas_cb.itemconfig(self.image_cb, image=self.imagetk_cb)
 
 
@@ -79,9 +79,9 @@ def main():
     # img = SimpleImage("data/color_blind_test.png")
     # img = SimpleImage("data/man_red_shirt_gs.png")
     # img = SimpleImage("data/color_spectrum.png")
-    # img = SimpleImage("data/french_riviera.png")
+    img = SimpleImage("data/french_riviera.png")
     # img = SimpleImage("data/girl_black_dress_bs.png").resize_scale(0.75)
-    img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
+    # img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
     # img = SimpleImage("data/t-rex.png")
 
     root = simple_image_tk.show_tk_root()
