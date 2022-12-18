@@ -31,12 +31,12 @@ https://docs.opencv.org/4.x/de/d25/imgproc_color_conversions.html#color_convert_
 """
 def cielab_lightness(img):
     bgr = img.image_data
-    lab = cv.cvtColor(bgr, cv.COLOR_BGR2LAB)
+    lab = cv.cvtColor(bgr, cv.COLOR_RGB2LAB)
     l, a, b = cv.split(lab)
     a = np.full(l.shape, 128, dtype=np.uint8)
     b = np.full(l.shape, 128, dtype=np.uint8)
     lab = cv.merge((l, a, b))
-    gs = cv.cvtColor(lab, cv.COLOR_LAB2BGR)
+    gs = cv.cvtColor(lab, cv.COLOR_LAB2RGB)
     img_gs = SimpleImage.from_image_data(gs)
     return img_gs
 

@@ -19,8 +19,8 @@ class ColorBlindness(ttk.Frame):
     def __init__(self, parent, img):
         super().__init__(parent)
         self.img = img
-        self.image_data = img.converted_image_data(mode='RGB')
-        self.image_data_norm = img.converted_image_data(mode='RGB', normalized=True)
+        self.image_data = img.image_data
+        self.image_data_norm = img.image_data_converted(normalized=True)
 
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=img.width-1, height=img.height-1)
         self.image_data = self.image_data
@@ -63,7 +63,6 @@ class ColorBlindness(ttk.Frame):
         ColorBlindness.image_cache[severity] = image
         return image
 
-
     def update(self, severity=50):
         severity = int(severity)
         image = ColorBlindness.image_cache.get(severity)
@@ -80,9 +79,9 @@ def main():
     # img = SimpleImage("data/color_blind_test.png")
     # img = SimpleImage("data/man_red_shirt_gs.png")
     # img = SimpleImage("data/color_spectrum.png")
-    img = SimpleImage("data/french_riviera.png")
+    # img = SimpleImage("data/french_riviera.png")
     # img = SimpleImage("data/girl_black_dress_bs.png").resize_scale(0.75)
-    # img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
+    img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
     # img = SimpleImage("data/t-rex.png")
 
     root = simple_image_tk.show_tk_root()

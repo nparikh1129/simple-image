@@ -61,10 +61,10 @@ class SimpleImageWindow(tk.Toplevel):
                 return window
         return cls(name, descriptor)
 
-    def set_image(self, image, create):
+    def set_image(self, image):
         self.image = image.copy()
         self.canvas.config(width=image.width-1, height=image.height-1)
-        image_data = cv.cvtColor(self.image.image_data, cv.COLOR_BGR2RGB)
+        image_data = self.image.image_data
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(image_data))
         # TODO: Update the canvas image instead of creating if the canvas image already exists
         self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
@@ -80,7 +80,7 @@ class SimpleImageWindow(tk.Toplevel):
     def _mouse_action(cls, event):
         window = event.widget.master
         image_data = window.image.image_data
-        b, g, r = image_data[event.y][event.x]
+        r, g, b = image_data[event.y][event.x]
         x, y = event.x, event.y
         w, h = image_data.shape[1], image_data.shape[0]
         window.infobar.update_info(r, g, b, x, y, w, h)
@@ -100,7 +100,7 @@ class SimpleImageWindow(tk.Toplevel):
 class SimpleImage(object):
     def __init__(self, filename=None):
         if filename:
-            self._img = cv.imread(filename)
+            self._img = cv.cvtColor(cv.imread(filename), cv.COLOR_BGR2RGB)
         else:
             self._img = np.zeros((300, 400, 3), dtype=np.uint8)
 
@@ -109,24 +109,23 @@ class SimpleImage(object):
         img_blank = cls()
         img_blank._img = np.zeros((height, width, 3), dtype=np.uint8)
         if color:
-            img_blank._img[:] = (color.b, color.g, color.r)
+            img_blank._img[:] = (color.r, color.g, color.b)
         return img_blank
 
     @classmethod
-    def from_image_data(cls, image_data: np.ndarray, mode='BGR', normalized=False):
+    def from_image_data(cls, image_data: np.ndarray, mode='RGB', normalized=False):
         image_data = image_data.copy()
-        if mode == 'RGB':
-            if normalized:
-                image_data = (image_data*255).astype(dtype=np.uint8)
-            image_data = cv.cvtColor(image_data, cv.COLOR_RGB2BGR)
+        if mode == 'BGR':
+            image_data = cv.cvtColor(image_data, cv.COLOR_BGR2RGB)
+        if (mode == 'RGB' or mode == 'BGR') and normalized:
+            image_data = (image_data*255).astype(dtype=np.uint8)
         img = cls()
         img._img = image_data
         return img
 
-    def converted_image_data(self, mode='BGR', normalized=False):
+    def image_data_converted(self, mode='RGB', normalized=False):
         image_data = self._img.copy()
         if mode == 'RGB':
-            image_data = cv.cvtColor(image_data, cv.COLOR_BGR2RGB)
             if normalized:
                 image_data = image_data/255
         return image_data
@@ -165,7 +164,7 @@ class SimpleImage(object):
 
     def resize_proportional(self, width=None, height=None):
         if width or height:
-            if width and not height:
+            if width:
                 factor = (width/self.width)
             else:
                 factor = (height/self.height)
@@ -189,7 +188,7 @@ class SimpleImage(object):
 
     def add_border(self, top=0, bottom=0, left=0, right=0, color=SimpleColor(0, 0, 0)):
         self._img = cv.copyMakeBorder(self._img, top, bottom, left, right, cv.BORDER_CONSTANT, None,
-                                      value=(color.b, color.g, color.r))
+                                       value=(color.r, color.g, color.b))
         return self
 
     def add_border_centered(self, width, height, color=SimpleColor(0, 0, 0)):
@@ -219,6 +218,8 @@ class SimpleImage(object):
         window.set_image(self)
         return window
 
+    # TODO: Provide an method for getting the window as an embeddable Frame instead of Toplevel
+
     @classmethod
     def run(cls):
         root.mainloop()
@@ -233,11 +234,11 @@ class SimpleImage(object):
 
         @property
         def r(self):
-            return int(self._value[2])
+            return int(self._value[0])
 
         @r.setter
         def r(self, val):
-            self._value[2] = val
+            self._value[0] = val
 
         @property
         def g(self):
@@ -249,11 +250,11 @@ class SimpleImage(object):
 
         @property
         def b(self):
-            return int(self._value[0])
+            return int(self._value[2])
 
         @b.setter
         def b(self, val):
-            self._value[0] = val
+            self._value[2] = val
 
         def __str__(self):
             return f"x:{self.x} y:{self.y} r:{self.r} g:{self.g} b:{self.b}"

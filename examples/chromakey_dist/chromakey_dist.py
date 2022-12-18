@@ -53,10 +53,10 @@ def main():
     dist_max = 130
     img = replace_background(img_ck.copy(), img_bg, color_bg, dist_max)
 
-    img_ck.show('chroma key', topmost=True)
-    img.show('composited', topmost=True)
+    img_ck.show('chroma key')
+    img.show('composited')
 
-    SimpleImage.wait_key_and_close_windows(delay=120)
+    SimpleImage.run()
 
 
 if __name__ == '__main__':

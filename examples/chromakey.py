@@ -9,7 +9,7 @@ def main():
 
     lower_hsv = np.array([50, 122, 0])
     upper_hsv = np.array([80, 255, 255])
-    img_hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    img_hsv = cv.cvtColor(img, cv.COLOR_RGB2HSV)
     mask_bg = cv.inRange(img_hsv, lower_hsv, upper_hsv)
     mask_fg = cv.bitwise_not(mask_bg)
 

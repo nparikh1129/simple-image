@@ -21,14 +21,13 @@ def main():
     hsv_upper = np.array([80, 255, 255])
 
     res = run(img, img_bg, img_hsv, hsv_lower, hsv_upper)
-    si_img = SimpleImage.from_image_data(img)
-    si_img.show('Chroma Screen', topmost=True)
-    si_res = SimpleImage.from_image_data(res)
-    window = si_res.show('Result', topmost=True)
+    si_img = SimpleImage.from_image_data(img, mode='BGR')
+    si_img.show('Chroma Screen')
+    si_res = SimpleImage.from_image_data(res, mode='BGR')
+    window = si_res.show('Result')
     window.move(482, 0)
 
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    SimpleImage.run()
 
 
 if __name__ == "__main__":
