@@ -20,7 +20,7 @@ class ColorBlindness(ttk.Frame):
         super().__init__(parent)
         self.img = img
         self.image_data = img.image_data
-        self.image_data_norm = img.image_data_converted(normalized=True)
+        self.image_data_norm = img.image_data_convert(normalize=True)
 
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=img.width-1, height=img.height-1)
         self.image_data = self.image_data
@@ -32,10 +32,10 @@ class ColorBlindness(ttk.Frame):
         self.imagetk_cb = ImageTk.PhotoImage(Image.fromarray(self.image_data_cb))
         self.image_cb = self.canvas_cb.create_image(0, 0, anchor='nw', image=self.imagetk_cb)
 
-        self.slider = simple_image_tk.SliderWithLabelAndEntry(parent, label='Severity', from_=0, to=100, value=0, length=400, command=self.update)
+        self.slider = simple_image_tk.SliderWithLabelAndEntry(self, label='Severity', from_=0, to=100, value=0, length=400, command=self.update)
 
         self.progress_var = tk.IntVar()
-        self.progress_bar = ttk.Progressbar(parent, variable=self.progress_var, length=400)
+        self.progress_bar = ttk.Progressbar(self, variable=self.progress_var, length=400)
 
         self.canvas.grid(row=0, column=0)
         self.canvas_cb.grid(row=0, column=1, padx=(20, 0))
@@ -76,17 +76,23 @@ class ColorBlindness(ttk.Frame):
 
 
 def main():
-    # img = SimpleImage("data/color_blind_test.png")
+    img = SimpleImage("data/color_blind_test.png")
     # img = SimpleImage("data/man_red_shirt_gs.png")
     # img = SimpleImage("data/color_spectrum.png")
-    img = SimpleImage("data/french_riviera.png")
+    # img = SimpleImage("data/french_riviera.png")
     # img = SimpleImage("data/girl_black_dress_bs.png").resize_scale(0.75)
     # img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
     # img = SimpleImage("data/t-rex.png")
 
     root = simple_image_tk.show_tk_root()
     cb = ColorBlindness(root, img)
+
+    img2 = SimpleImage("data/ball_pit.png").resize_scale(0.5)
+    frame = img2.show(parent=root)
+
     cb.grid(row=0, column=0)
+    frame.grid(row=1, column=0)
+
     root.mainloop()
 
 

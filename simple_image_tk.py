@@ -73,6 +73,49 @@ class ImageInfoBar(ttk.Frame):
         self.h_var.set(h)
 
 
+class SimpleImageTk(ttk.Frame):
+    def __init__(self, parent, name, tag=None):
+        super().__init__(parent)
+        self.name = name
+        self.tag = tag
+        self.image_data = None
+        self.imagetk = None
+        self._configure_widets()
+
+    def _configure_widets(self):
+        self.infobar = ImageInfoBar(self)
+        self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
+        self.canvas_image = self.canvas.create_image(0, 0, anchor='nw')
+        self.infobar.grid(row=0, column=0, sticky='ew')
+        self.canvas.grid(row=1, column=0)
+        self.canvas.bind('<Motion>', SimpleImageTk._mouse_action)
+        self.canvas.bind('<Button>', SimpleImageTk._mouse_action)
+        self.canvas.bind('<Leave>', SimpleImageTk._leave_window)
+
+    def set_image_data(self, image_data):
+        width, height = image_data.shape[1], image_data.shape[0]
+        self.canvas.config(width=width-1, height=height-1)
+        self.image_data = image_data
+        self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+        self.canvas.itemconfig(self.canvas_image, image=self.imagetk)
+
+    @classmethod
+    def _mouse_action(cls, event):
+        window = event.widget.master
+        image_data = window.image_data
+        r, g, b = image_data[event.y][event.x]
+        x, y = event.x, event.y
+        w, h = image_data.shape[1], image_data.shape[0]
+        window.infobar.update_info(r, g, b, x, y, w, h)
+
+    @classmethod
+    def _leave_window(cls, event):
+        window = event.widget.master
+        image_data = window.image_data
+        w, h = image_data.shape[1], image_data.shape[0]
+        window.infobar.update_info(w=w, h=h)
+
+
 class ButtonsBar(ttk.Frame):
 
     def __init__(self, parent):

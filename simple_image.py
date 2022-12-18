@@ -5,6 +5,8 @@ import cv2 as cv
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
+
+import simple_image_tk
 from simple_image_tk import root, ImageInfoBar
 
 # TODO: Use pillow for imageio
@@ -31,7 +33,7 @@ class SimpleImageWindowManager(object):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
     @classmethod
-    def request_window(cls, name=None, parent=None, tag=None, title=None):
+    def update_or_create_window(cls, name=None, parent=None, tag=None, title=None):
         if name is not None:
             window: SimpleImageWindow = cls._windows.get(name)
             if window:
@@ -102,44 +104,69 @@ class SimpleImageWindow(ttk.Frame):
         super().__init__(parent)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
-        self.name = name
-        self.tag = tag
-        self._configure_widets()
+        self.image = simple_image_tk.SimpleImageTk(parent, name, tag)
+        self.image.grid(row=0, column=0)
 
-    def _configure_widets(self):
-        self.infobar = ImageInfoBar(self)
-        self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
-        self.infobar.grid(row=0, column=0, sticky='ew')
-        self.canvas.grid(row=1, column=0)
-        self.image = None
-        self.imagetk = None
-        self.canvas.bind('<Motion>', SimpleImageWindow._mouse_action)
-        self.canvas.bind('<Button>', SimpleImageWindow._mouse_action)
-        self.canvas.bind('<Leave>', SimpleImageWindow._leave_window)
+    @property
+    def name(self):
+        return self.image.name
 
-    def set_image(self, image):
-        self.image = image.copy()
-        self.canvas.config(width=image.width-1, height=image.height-1)
-        image_data = self.image.image_data
-        self.imagetk = ImageTk.PhotoImage(Image.fromarray(image_data))
-        # TODO: Update the canvas image instead of creating if the canvas image already exists
-        self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
+    @property
+    def tag(self):
+        return self.image.tag
 
-    @classmethod
-    def _mouse_action(cls, event):
-        window = event.widget.master
-        image_data = window.image.image_data
-        r, g, b = image_data[event.y][event.x]
-        x, y = event.x, event.y
-        w, h = image_data.shape[1], image_data.shape[0]
-        window.infobar.update_info(r, g, b, x, y, w, h)
+    @tag.setter
+    def tag(self, tag):
+        self.image.tag = tag
 
-    @classmethod
-    def _leave_window(cls, event):
-        window = event.widget.master
-        image_data = window.image.image_data
-        w, h = image_data.shape[1], image_data.shape[0]
-        window.infobar.update_info(w=w, h=h)
+    def set_image(self, image_data):
+        self.image.set_image_data(image_data)
+
+# class SimpleImageWindow(ttk.Frame):
+#     _window_id = itertools.count(start=1)
+#
+#     def __init__(self, parent, name=None, tag=None):
+#         super().__init__(parent)
+#         if not name:
+#             name = f'window{next(SimpleImageWindow._window_id)}'
+#         self.name = name
+#         self.tag = tag
+#         self.image_data = None
+#         self.imagetk = None
+#         self._configure_widets()
+#
+#     def _configure_widets(self):
+#         self.infobar = ImageInfoBar(self)
+#         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
+#         self.canvas_image = self.canvas.create_image(0, 0, anchor='nw')
+#         self.infobar.grid(row=0, column=0, sticky='ew')
+#         self.canvas.grid(row=1, column=0)
+#         self.canvas.bind('<Motion>', SimpleImageWindow._mouse_action)
+#         self.canvas.bind('<Button>', SimpleImageWindow._mouse_action)
+#         self.canvas.bind('<Leave>', SimpleImageWindow._leave_window)
+#
+#     def set_image(self, image_data):
+#         width, height = image_data.shape[1], image_data.shape[0]
+#         self.canvas.config(width=width-1, height=height-1)
+#         self.image_data = image_data
+#         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
+#         self.canvas.itemconfig(self.canvas_image, image=self.imagetk)
+#
+#     @classmethod
+#     def _mouse_action(cls, event):
+#         window = event.widget.master
+#         image_data = window.image_data
+#         r, g, b = image_data[event.y][event.x]
+#         x, y = event.x, event.y
+#         w, h = image_data.shape[1], image_data.shape[0]
+#         window.infobar.update_info(r, g, b, x, y, w, h)
+#
+#     @classmethod
+#     def _leave_window(cls, event):
+#         window = event.widget.master
+#         image_data = window.image_data
+#         w, h = image_data.shape[1], image_data.shape[0]
+#         window.infobar.update_info(w=w, h=h)
 
 
 class SimpleImage(object):
@@ -168,10 +195,10 @@ class SimpleImage(object):
         img._img = image_data
         return img
 
-    def image_data_converted(self, mode='RGB', normalized=False):
+    def image_data_convert(self, mode='RGB', normalize=False):
         image_data = self._img.copy()
         if mode == 'RGB':
-            if normalized:
+            if normalize:
                 image_data = image_data/255
         return image_data
 
@@ -191,9 +218,10 @@ class SimpleImage(object):
     def image_data(self, image_data: np.ndarray):
         self._img = image_data
 
+    # TODO: Rename method because it places the image, doesn't 'show' it
     def show(self, window_name=None, parent=None, tag=None, title=None):
-        window = SimpleImageWindowManager.request_window(window_name, parent, tag, title)
-        window.set_image(self)
+        window = SimpleImageWindowManager.update_or_create_window(window_name, parent, tag, title)
+        window.set_image(self.image_data.copy())
         return window
 
     def write(self, filename):
@@ -328,7 +356,7 @@ def main():
     print(id(window1))
 
     image2 = SimpleImage('data/cyberpunk.png')
-    window2 = image2.show(window_name='test1', tag='cyberpunk')
+    window2 = image2.show(window_name='test2', tag='cyberpunk')
     print(id(window2))
 
     SimpleImage.run()
