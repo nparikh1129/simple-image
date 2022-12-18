@@ -4,6 +4,7 @@ import numpy as np
 import cv2 as cv
 from PIL import Image, ImageTk
 import tkinter as tk
+from tkinter import ttk
 from simple_image_tk import root, ImageInfoBar
 
 # TODO: Use pillow for imageio
@@ -26,19 +27,84 @@ class SimpleColor(object):
         return self.b, self.g, self.r
 
 
-class SimpleImageWindow(tk.Toplevel):
-    _window_id = itertools.count(start=1)
+class SimpleImageWindowManager(object):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
 
-    def __init__(self, name=None, tag=None):
+    @classmethod
+    def request_window(cls, name=None, parent=None, tag=None, title=None):
+        if name is not None:
+            window: SimpleImageWindow = cls._windows.get(name)
+            if window:
+                if tag is not None:
+                    window.tag = tag
+                return window
+        toplevel = False
+        if not parent:
+            parent = ToplevelWindow(title)
+            toplevel = True
+        window = SimpleImageWindow(parent, name, tag)
+        if toplevel:
+            parent.set_image_window(window)
+            cls._windows[window.name] = parent
+            return parent
+        cls._windows[window.name] = window
+        return window
+
+    @classmethod
+    def remove_window(cls, name):
+        cls._windows.pop(name)
+        if len(cls._windows) == 0 and root.state() == 'withdrawn':
+            root.destroy()
+
+
+class ToplevelWindow(tk.Toplevel):
+
+    def __init__(self, title=None):
         super().__init__(root)
+        self.title(title)
+        self.image_window = None
+        self.protocol("WM_DELETE_WINDOW", lambda arg=self: ToplevelWindow._window_close(arg))
+
+    def _window_close(self):
+        self.destroy()
+        SimpleImageWindowManager.remove_window(self.image_window.name)
+
+    def set_image_window(self, image_window):
+        self.image_window = image_window
+        self.image_window.grid(row=0, column=0)
+        if self.title() == 'tk':
+            self.title(image_window.name)
+
+    def set_image(self, image):
+        self.image_window.set_image(image)
+
+    @property
+    def name(self):
+        return self.image_window.name
+
+    @property
+    def tag(self):
+        return self.image_window.tag
+
+    @tag.setter
+    def tag(self, tag):
+        self.image_window.tag = tag
+
+    def move(self, x, y):
+        self.geometry(f'+{x}+{y}')
+        return self
+
+
+class SimpleImageWindow(ttk.Frame):
+    _window_id = itertools.count(start=1)
+
+    def __init__(self, parent, name=None, tag=None):
+        super().__init__(parent)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.name = name
-        self.title(name)
         self.tag = tag
         self._configure_widets()
-        SimpleImageWindow._windows[name] = self
 
     def _configure_widets(self):
         self.infobar = ImageInfoBar(self)
@@ -50,16 +116,6 @@ class SimpleImageWindow(tk.Toplevel):
         self.canvas.bind('<Motion>', SimpleImageWindow._mouse_action)
         self.canvas.bind('<Button>', SimpleImageWindow._mouse_action)
         self.canvas.bind('<Leave>', SimpleImageWindow._leave_window)
-        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(self))
-
-    @classmethod
-    def _update_or_create(cls, name, tag=None):
-        if name is not None:
-            window: SimpleImageWindow = SimpleImageWindow._windows.get(name)
-            if window:
-                window.tag = tag
-                return window
-        return cls(name, tag)
 
     def set_image(self, image):
         self.image = image.copy()
@@ -68,13 +124,6 @@ class SimpleImageWindow(tk.Toplevel):
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(image_data))
         # TODO: Update the canvas image instead of creating if the canvas image already exists
         self.canvas.create_image(0, 0, anchor='nw', image=self.imagetk)
-
-    @classmethod
-    def _window_close(cls, window):
-        window.destroy()
-        cls._windows.pop(window.name)
-        if len(cls._windows) == 0 and root.state() == 'withdrawn':
-            root.destroy()
 
     @classmethod
     def _mouse_action(cls, event):
@@ -91,10 +140,6 @@ class SimpleImageWindow(tk.Toplevel):
         image_data = window.image.image_data
         w, h = image_data.shape[1], image_data.shape[0]
         window.infobar.update_info(w=w, h=h)
-
-    def move(self, x, y):
-        self.geometry(f'+{x}+{y}')
-        return self
 
 
 class SimpleImage(object):
@@ -145,6 +190,11 @@ class SimpleImage(object):
     @image_data.setter
     def image_data(self, image_data: np.ndarray):
         self._img = image_data
+
+    def show(self, window_name=None, parent=None, tag=None, title=None):
+        window = SimpleImageWindowManager.request_window(window_name, parent, tag, title)
+        window.set_image(self)
+        return window
 
     def write(self, filename):
         cv.imwrite(filename, self._img)
@@ -213,13 +263,6 @@ class SimpleImage(object):
         self._img[y:y + img.height, x:x + img.width] = img._img
         return self
 
-    def show(self, window_name=None, tag=None):
-        window = SimpleImageWindow._update_or_create(window_name, tag)
-        window.set_image(self)
-        return window
-
-    # TODO: Provide an method for getting the window as an embeddable Frame instead of Toplevel
-
     @classmethod
     def run(cls):
         root.mainloop()
@@ -281,10 +324,12 @@ class SimpleImage(object):
 
 def main():
     image1 = SimpleImage('data/girl_black_dress_bs.png')
-    window1 = image1.show('test1')
+    window1 = image1.show(window_name='test1', tag='girl_black_dress_bs')
+    print(id(window1))
 
     image2 = SimpleImage('data/cyberpunk.png')
-    image2.show()
+    window2 = image2.show(window_name='test1', tag='cyberpunk')
+    print(id(window2))
 
     SimpleImage.run()
 
