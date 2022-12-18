@@ -29,83 +29,39 @@ class SimpleColor(object):
         return self.b, self.g, self.r
 
 
-class SimpleImageWindowManager(object):
+# TODO: Do we really need a tag at this level?
+class SimpleImageWindow(tk.Toplevel):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
+    _window_id = itertools.count(start=1)
+
+    def __init__(self, name=None, title=None, tag=None):
+        super().__init__(root)
+        if not name:
+            name = f'window{next(SimpleImageWindow._window_id)}'
+        self.title(title or name)
+        self.image = simple_image_tk.SimpleImageTk(self, name, tag)
+        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
+        self.image.grid(row=0, column=0)
 
     @classmethod
-    def update_or_create_window(cls, name=None, parent=None, tag=None, title=None):
+    def update_or_create(cls, name=None, title=None, tag=None):
         if name is not None:
             window: SimpleImageWindow = cls._windows.get(name)
             if window:
+                if title is not None:
+                    window.title(title)
                 if tag is not None:
                     window.tag = tag
                 return window
-        toplevel = False
-        if not parent:
-            parent = ToplevelWindow(title)
-            toplevel = True
-        window = SimpleImageWindow(parent, name, tag)
-        if toplevel:
-            parent.set_image_window(window)
-            cls._windows[window.name] = parent
-            return parent
+        window = SimpleImageWindow(name=name, title=title, tag=tag)
         cls._windows[window.name] = window
         return window
 
-    @classmethod
-    def remove_window(cls, name):
-        cls._windows.pop(name)
-        if len(cls._windows) == 0 and root.state() == 'withdrawn':
-            root.destroy()
-
-
-class ToplevelWindow(tk.Toplevel):
-
-    def __init__(self, title=None):
-        super().__init__(root)
-        self.title(title)
-        self.image_window = None
-        self.protocol("WM_DELETE_WINDOW", lambda arg=self: ToplevelWindow._window_close(arg))
-
     def _window_close(self):
         self.destroy()
-        SimpleImageWindowManager.remove_window(self.image_window.name)
-
-    def set_image_window(self, image_window):
-        self.image_window = image_window
-        self.image_window.grid(row=0, column=0)
-        if self.title() == 'tk':
-            self.title(image_window.name)
-
-    def set_image(self, image):
-        self.image_window.set_image(image)
-
-    @property
-    def name(self):
-        return self.image_window.name
-
-    @property
-    def tag(self):
-        return self.image_window.tag
-
-    @tag.setter
-    def tag(self, tag):
-        self.image_window.tag = tag
-
-    def move(self, x, y):
-        self.geometry(f'+{x}+{y}')
-        return self
-
-
-class SimpleImageWindow(ttk.Frame):
-    _window_id = itertools.count(start=1)
-
-    def __init__(self, parent, name=None, tag=None):
-        super().__init__(parent)
-        if not name:
-            name = f'window{next(SimpleImageWindow._window_id)}'
-        self.image = simple_image_tk.SimpleImageTk(parent, name, tag)
-        self.image.grid(row=0, column=0)
+        SimpleImageWindow._windows.pop(self.image.name)
+        if len(SimpleImageWindow._windows) == 0 and root.state() == 'withdrawn':
+            root.destroy()
 
     @property
     def name(self):
@@ -119,54 +75,12 @@ class SimpleImageWindow(ttk.Frame):
     def tag(self, tag):
         self.image.tag = tag
 
-    def set_image(self, image_data):
+    def set_image_data(self, image_data):
         self.image.set_image_data(image_data)
 
-# class SimpleImageWindow(ttk.Frame):
-#     _window_id = itertools.count(start=1)
-#
-#     def __init__(self, parent, name=None, tag=None):
-#         super().__init__(parent)
-#         if not name:
-#             name = f'window{next(SimpleImageWindow._window_id)}'
-#         self.name = name
-#         self.tag = tag
-#         self.image_data = None
-#         self.imagetk = None
-#         self._configure_widets()
-#
-#     def _configure_widets(self):
-#         self.infobar = ImageInfoBar(self)
-#         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
-#         self.canvas_image = self.canvas.create_image(0, 0, anchor='nw')
-#         self.infobar.grid(row=0, column=0, sticky='ew')
-#         self.canvas.grid(row=1, column=0)
-#         self.canvas.bind('<Motion>', SimpleImageWindow._mouse_action)
-#         self.canvas.bind('<Button>', SimpleImageWindow._mouse_action)
-#         self.canvas.bind('<Leave>', SimpleImageWindow._leave_window)
-#
-#     def set_image(self, image_data):
-#         width, height = image_data.shape[1], image_data.shape[0]
-#         self.canvas.config(width=width-1, height=height-1)
-#         self.image_data = image_data
-#         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
-#         self.canvas.itemconfig(self.canvas_image, image=self.imagetk)
-#
-#     @classmethod
-#     def _mouse_action(cls, event):
-#         window = event.widget.master
-#         image_data = window.image_data
-#         r, g, b = image_data[event.y][event.x]
-#         x, y = event.x, event.y
-#         w, h = image_data.shape[1], image_data.shape[0]
-#         window.infobar.update_info(r, g, b, x, y, w, h)
-#
-#     @classmethod
-#     def _leave_window(cls, event):
-#         window = event.widget.master
-#         image_data = window.image_data
-#         w, h = image_data.shape[1], image_data.shape[0]
-#         window.infobar.update_info(w=w, h=h)
+    def move(self, x, y):
+        self.geometry(f'+{x}+{y}')
+        return self
 
 
 class SimpleImage(object):
@@ -219,9 +133,9 @@ class SimpleImage(object):
         self._img = image_data
 
     # TODO: Rename method because it places the image, doesn't 'show' it
-    def show(self, window_name=None, parent=None, tag=None, title=None):
-        window = SimpleImageWindowManager.update_or_create_window(window_name, parent, tag, title)
-        window.set_image(self.image_data.copy())
+    def show(self, window_name=None, tag=None, title=None):
+        window = SimpleImageWindow.update_or_create(window_name, tag, title)
+        window.set_image_data(self.image_data.copy())
         return window
 
     def write(self, filename):
