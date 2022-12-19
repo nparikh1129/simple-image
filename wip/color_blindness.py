@@ -13,6 +13,12 @@ import threading
 
 
 
+# class class ColorBlindnessApp(ttk.Frame):
+
+
+
+
+
 class ColorBlindness(ttk.Frame):
     image_cache = {}
 
@@ -76,31 +82,24 @@ class ColorBlindness(ttk.Frame):
 
 
 def main():
-    img = SimpleImage("data/color_blind_test.png")
+    # img = SimpleImage("data/color_blind_test.png")
     # img = SimpleImage("data/man_red_shirt_gs.png")
     # img = SimpleImage("data/color_spectrum.png")
     # img = SimpleImage("data/french_riviera.png")
     # img = SimpleImage("data/girl_black_dress_bs.png").resize_scale(0.75)
-    # img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
+    img = SimpleImage("data/futuristic_city.png").resize_scale(0.75)
     # img = SimpleImage("data/t-rex.png")
 
     root = simple_image_tk.show_tk_root()
     cb = ColorBlindness(root, img)
 
-    img2 = SimpleImage("data/ball_pit.png").resize_scale(0.5)
-    frame = img2.put_in_window(parent=root)
+    # img2 = SimpleImage("data/ball_pit.png").resize_scale(0.5)
+    # frame = simple_image_tk.SimpleImageTk()
 
     cb.grid(row=0, column=0)
-    frame.grid(row=1, column=0)
+    # frame.grid(row=1, column=0)
 
     root.mainloop()
-
-
-
-
-
-
-
 
 
 

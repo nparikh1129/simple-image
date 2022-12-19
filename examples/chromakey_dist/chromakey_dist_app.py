@@ -62,12 +62,8 @@ class ChromaKeyDistanceApp(object):
 
 # TODO: Be able to choose cs and bg images, including blank backgrounds
 def main():
-    # img_cs = SimpleImage('data/girl_shadows_gs.png')
-    # img_bg = SimpleImage('data/cyberpunk.png')
-
-    img_cs = SimpleImage('data/color_spectrum.png').resize(480, 320)
-    img_bg = SimpleImage.blank(480, 320, SimpleColor(0, 0, 0))
-
+    img_cs = SimpleImage('data/girl_shadows_gs.png')
+    img_bg = SimpleImage('data/cyberpunk.png')
     #TODO: Resize images to match
     app = ChromaKeyDistanceApp(img_cs, img_bg)
     app.run()

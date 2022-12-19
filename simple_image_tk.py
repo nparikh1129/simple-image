@@ -77,9 +77,8 @@ class ImageInfoBar(ttk.Frame):
 
 
 class SimpleImageTk(ttk.Frame):
-    def __init__(self, parent, name, tag=None, info_bar=True, color_button=True):
+    def __init__(self, parent, tag=None, info_bar=True, color_button=True):
         super().__init__(parent)
-        self.name = name
         self.tag = tag
         self.image_data = None
         self.imagetk = None

@@ -33,37 +33,44 @@ class SimpleImageWindow(tk.Toplevel):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
     _window_id = itertools.count(start=1)
 
-    def __init__(self, name=None, title=None):
+    def __init__(self, name=None, title=None, tag=None):
         super().__init__(root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
+        self.name_ = name
         self.title(title or name)
-        self.image = simple_image_tk.SimpleImageTk(self, name)
+        self.image = simple_image_tk.SimpleImageTk(self, tag=tag)
         self.image.grid(row=0, column=0)
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
 
 
     @classmethod
-    def update_or_create(cls, name=None, title=None):
+    def update_or_create(cls, name=None, title=None, tag=None):
         if name is not None:
             window: SimpleImageWindow = cls._windows.get(name)
             if window:
                 if title is not None:
                     window.title(title)
+                if tag is not None:
+                    window.tag = tag
                 return window
-        window = SimpleImageWindow(name=name, title=title)
-        cls._windows[window.name] = window
+        window = SimpleImageWindow(name=name, title=title, tag=tag)
+        cls._windows[window.name_] = window
         return window
 
     def _window_close(self):
         self.destroy()
-        SimpleImageWindow._windows.pop(self.image.name)
+        SimpleImageWindow._windows.pop(self.name_)
         if len(SimpleImageWindow._windows) == 0 and root.state() == 'withdrawn':
             root.destroy()
 
     @property
-    def name(self):
-        return self.image.name
+    def tag(self):
+        return self.image.tag
+
+    @tag.setter
+    def tag(self, tag):
+        self.image.tag = tag
 
     def set_image_data(self, image_data):
         self.image.set_image_data(image_data)
@@ -122,8 +129,8 @@ class SimpleImage(object):
     def image_data(self, image_data: np.ndarray):
         self._img = image_data
 
-    def put_in_window(self, window_name=None, title=None):
-        window = SimpleImageWindow.update_or_create(window_name, title)
+    def put_in_window(self, window_name=None, title=None, tag=None):
+        window = SimpleImageWindow.update_or_create(window_name, title, tag)
         window.set_image_data(self.image_data.copy())
         return window
 
