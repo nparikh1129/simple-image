@@ -43,7 +43,6 @@ class SimpleImageWindow(tk.Toplevel):
         self.image.grid(row=0, column=0)
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
 
-
     @classmethod
     def update_or_create(cls, name=None, title=None, tag=None):
         if name is not None:
