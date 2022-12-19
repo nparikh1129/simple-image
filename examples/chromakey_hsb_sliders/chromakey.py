@@ -22,12 +22,12 @@ def main():
 
     res = run(img, img_bg, img_hsv, hsv_lower, hsv_upper)
     si_img = SimpleImage.from_image_data(img, mode='BGR')
-    si_img.show('Chroma Screen')
+    si_img.put_in_window('Chroma Screen')
     si_res = SimpleImage.from_image_data(res, mode='BGR')
-    window = si_res.show('Result')
+    window = si_res.put_in_window('Result')
     window.move(482, 0)
 
-    SimpleImage.run()
+    SimpleImage.show_windows()
 
 
 if __name__ == "__main__":

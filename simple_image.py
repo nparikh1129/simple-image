@@ -2,14 +2,14 @@ import itertools
 from typing import Dict
 import numpy as np
 import cv2 as cv
-from PIL import Image, ImageTk
+from PIL import Image
 import tkinter as tk
-from tkinter import ttk
 
 import simple_image_tk
-from simple_image_tk import root, ImageInfoBar
+from simple_image_tk import root
 
-# TODO: Use pillow for imageio
+# TODO: Any reason not to base most of this on pillow?
+
 
 class SimpleColor(object):
 
@@ -29,31 +29,28 @@ class SimpleColor(object):
         return self.b, self.g, self.r
 
 
-# TODO: Do we really need a tag at this level?
 class SimpleImageWindow(tk.Toplevel):
     _windows: Dict[str, 'SimpleImageWindow'] = {}
     _window_id = itertools.count(start=1)
 
-    def __init__(self, name=None, title=None, tag=None):
+    def __init__(self, name=None, title=None):
         super().__init__(root)
         if not name:
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.title(title or name)
-        self.image = simple_image_tk.SimpleImageTk(self, name, tag)
+        self.image = simple_image_tk.SimpleImageTk(self, name)
         self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
         self.image.grid(row=0, column=0)
 
     @classmethod
-    def update_or_create(cls, name=None, title=None, tag=None):
+    def update_or_create(cls, name=None, title=None):
         if name is not None:
             window: SimpleImageWindow = cls._windows.get(name)
             if window:
                 if title is not None:
                     window.title(title)
-                if tag is not None:
-                    window.tag = tag
                 return window
-        window = SimpleImageWindow(name=name, title=title, tag=tag)
+        window = SimpleImageWindow(name=name, title=title)
         cls._windows[window.name] = window
         return window
 
@@ -66,14 +63,6 @@ class SimpleImageWindow(tk.Toplevel):
     @property
     def name(self):
         return self.image.name
-
-    @property
-    def tag(self):
-        return self.image.tag
-
-    @tag.setter
-    def tag(self, tag):
-        self.image.tag = tag
 
     def set_image_data(self, image_data):
         self.image.set_image_data(image_data)
@@ -132,11 +121,18 @@ class SimpleImage(object):
     def image_data(self, image_data: np.ndarray):
         self._img = image_data
 
-    # TODO: Rename method because it places the image, doesn't 'show' it
-    def show(self, window_name=None, tag=None, title=None):
-        window = SimpleImageWindow.update_or_create(window_name, tag, title)
+    def put_in_window(self, window_name=None, title=None):
+        window = SimpleImageWindow.update_or_create(window_name, title)
         window.set_image_data(self.image_data.copy())
         return window
+
+    @classmethod
+    def show_windows(cls):
+        root.mainloop()
+
+    def show(self, title=None):
+        image = Image .fromarray(self.image_data)
+        image.show(title=title)
 
     def write(self, filename):
         cv.imwrite(filename, self._img)
@@ -180,7 +176,7 @@ class SimpleImage(object):
 
     def add_border(self, top=0, bottom=0, left=0, right=0, color=SimpleColor(0, 0, 0)):
         self._img = cv.copyMakeBorder(self._img, top, bottom, left, right, cv.BORDER_CONSTANT, None,
-                                       value=(color.r, color.g, color.b))
+                                      value=(color.r, color.g, color.b))
         return self
 
     def add_border_centered(self, width, height, color=SimpleColor(0, 0, 0)):
@@ -204,10 +200,6 @@ class SimpleImage(object):
     def paste(self, img: 'SimpleImage', x, y):
         self._img[y:y + img.height, x:x + img.width] = img._img
         return self
-
-    @classmethod
-    def run(cls):
-        root.mainloop()
 
     class _Pixel(object):
 
@@ -266,14 +258,16 @@ class SimpleImage(object):
 
 def main():
     image1 = SimpleImage('data/girl_black_dress_bs.png')
-    window1 = image1.show(window_name='test1', tag='girl_black_dress_bs')
-    print(id(window1))
+    # window1 = image1.put_in_window(window_name='test1')
+    # print(id(window1))
+
+    image1.show('My image')
 
     image2 = SimpleImage('data/cyberpunk.png')
-    window2 = image2.show(window_name='test2', tag='cyberpunk')
+    window2 = image2.put_in_window(window_name='test2')
     print(id(window2))
 
-    SimpleImage.run()
+    SimpleImage.show_windows()
 
 
 if __name__ == '__main__':

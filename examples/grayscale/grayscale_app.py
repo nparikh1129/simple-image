@@ -42,31 +42,31 @@ class GrayscaleApp(object):
         self.buttons_bar.layout_buttons()
 
         self.root.update_idletasks()
-        self.img.show(self.window_name).move(self.root.winfo_width(), 0)
+        self.img.put_in_window(self.window_name).move(self.root.winfo_width(), 0)
         self.root.lift()
 
     def original(self):
-        self.img.show(self.window_name)
+        self.img.put_in_window(self.window_name)
 
     def lightness(self):
         if not self.gs_lightness:
             self.gs_lightness = grayscale.lightness(self.img.copy())
-        self.gs_lightness.show(self.window_name)
+        self.gs_lightness.put_in_window(self.window_name)
 
     def intensity(self):
         if not self.gs_intensity:
             self.gs_intensity = grayscale.intensity(self.img.copy())
-        self.gs_intensity.show(self.window_name)
+        self.gs_intensity.put_in_window(self.window_name)
 
     def luma(self):
         if not self.gs_luma:
             self.gs_luma = grayscale.luma601(self.img.copy())
-        self.gs_luma.show(self.window_name)
+        self.gs_luma.put_in_window(self.window_name)
 
     def lab_l(self):
         if not self.gs_lab_l:
             self.gs_lab_l = grayscale.cielab_lightness(self.img.copy())
-        self.gs_lab_l.show(self.window_name)
+        self.gs_lab_l.put_in_window(self.window_name)
 
     def run(self):
         self.root.mainloop()

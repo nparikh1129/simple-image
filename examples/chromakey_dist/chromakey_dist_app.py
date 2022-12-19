@@ -37,7 +37,7 @@ class ChromaKeyDistanceApp(object):
 
         self.root.update_idletasks()
         self.window_name = 'Chroma Screen Image'
-        self.window = self.img.show(self.window_name, tag='img')
+        self.window = self.img.put_in_window(self.window_name, tag='img')
         self.window.move(self.root.winfo_width(), 0)
         self.root.lift()
 
@@ -52,13 +52,13 @@ class ChromaKeyDistanceApp(object):
 
     def run_chromakey(self):
         self.img = chromakey_dist.replace_background(self.img_cs.copy(), self.img_bg, self.color_bg, self.dist_max)
-        self.img.show(self.window_name, tag='img')
+        self.img.put_in_window(self.window_name, tag='img')
 
     def swap_images(self):
         if self.window.tag == 'img':
-            self.img_cs.show(self.window_name, tag='img_cs')
+            self.img_cs.put_in_window(self.window_name, tag='img_cs')
         else:
-            self.img.show(self.window_name, tag='img')
+            self.img.put_in_window(self.window_name, tag='img')
 
 # TODO: Be able to choose cs and bg images, including blank backgrounds
 def main():

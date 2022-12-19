@@ -11,8 +11,8 @@ def main():
     img = cv.cvtColor(img_gray, cv.COLOR_GRAY2RGB)
     simp_img.image_data = img
 
-    simp_img.show('grayscale')
-    SimpleImage.run()
+    simp_img.put_in_window('grayscale')
+    SimpleImage.show_windows()
 
 
 if __name__ == '__main__':

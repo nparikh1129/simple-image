@@ -3,7 +3,7 @@ from simple_image import SimpleImage
 
 def main():
     img = SimpleImage('data/t-rex.png')
-    img.show('rot')
+    img.put_in_window('rot')
     SimpleImage.wait_key_and_close_windows()
 
 

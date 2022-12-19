@@ -15,7 +15,7 @@ from simple_image_tk import SliderWithLabelAndEntry, ColorGradientHSB
 def main():
     img = SimpleImage('data/futuristic_city.png')
     img_data = img.image_data
-    window = img.show()
+    window = img.put_in_window()
     time = timeit.timeit(lambda: window.set_image(img_data), number=1000)
     print(time)
 

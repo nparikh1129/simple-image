@@ -24,7 +24,7 @@ def main():
     color = SimpleColor(175, 137, 0)
     img_masked = mask_color_with_distance(img.copy(), color, dist_max)
 
-    img_masked.show('masked')
+    img_masked.put_in_window('masked')
 
     SimpleImage.wait_key_and_close_windows(delay=120)
 

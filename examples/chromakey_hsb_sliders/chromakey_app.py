@@ -40,7 +40,7 @@ class ChromaKeyApp(object):
 
         # Windows layout
         self.root.update_idletasks()
-        self.window = SimpleImage.from_image_data(img_cs, mode='BGR').show(self.window_name, tag='chromascreen')
+        self.window = SimpleImage.from_image_data(img_cs, mode='BGR').put_in_window(self.window_name, tag='chromascreen')
         self.window.move(self.root.winfo_width(), 0)
         self.root.lift()
 
@@ -48,21 +48,21 @@ class ChromaKeyApp(object):
         self.hsb_l[0], self.hsb_l[1], self.hsb_l[2] = hsb
         self.img_composite = chromakey.run(self.img_cs, self.img_bg, self.img_hsb, self.hsb_l, self.hsb_u)
         si_img_composite = SimpleImage.from_image_data(self.img_composite, mode='BGR')
-        self.window = si_img_composite.show(self.window_name, tag='composite')
+        self.window = si_img_composite.put_in_window(self.window_name, tag='composite')
 
     def update_hsb_upper(self, hsb):
         self.hsb_u[0], self.hsb_u[1], self.hsb_u[2] = hsb
         self.img_composite = chromakey.run(self.img_cs, self.img_bg, self.img_hsb, self.hsb_l, self.hsb_u)
         si_img_composite = SimpleImage.from_image_data(self.img_composite, mode='BGR')
-        self.window = si_img_composite.show(self.window_name, tag='composite')
+        self.window = si_img_composite.put_in_window(self.window_name, tag='composite')
 
     def swap_images(self):
         if self.window.tag == 'chromascreen':
             si_img_composite = SimpleImage.from_image_data(self.img_composite, mode='BGR')
-            si_img_composite.show(self.window_name, tag='composite')
+            si_img_composite.put_in_window(self.window_name, tag='composite')
         else:
             si_img_cs = SimpleImage.from_image_data(self.img_cs, mode='BGR')
-            si_img_cs.show(self.window_name, tag='chromascreen')
+            si_img_cs.put_in_window(self.window_name, tag='chromascreen')
 
 
 def main():
@@ -70,7 +70,7 @@ def main():
     img_bg = cv.imread('data/cyberpunk.png')
     img_bg = cv.resize(img_bg, (img_cs.shape[1], img_cs.shape[0]))
     ChromaKeyApp(img_cs, img_bg)
-    SimpleImage.run()
+    SimpleImage.show_windows()
 
 
 if __name__ == '__main__':

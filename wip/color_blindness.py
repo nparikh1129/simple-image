@@ -88,7 +88,7 @@ def main():
     cb = ColorBlindness(root, img)
 
     img2 = SimpleImage("data/ball_pit.png").resize_scale(0.5)
-    frame = img2.show(parent=root)
+    frame = img2.put_in_window(parent=root)
 
     cb.grid(row=0, column=0)
     frame.grid(row=1, column=0)
