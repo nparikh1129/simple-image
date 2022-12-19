@@ -77,16 +77,18 @@ class ImageInfoBar(ttk.Frame):
 
 
 class SimpleImageTk(ttk.Frame):
-    def __init__(self, parent, tag=None, info_bar=True, color_button=True):
+    def __init__(self, parent, image_data=None, tag=None, info_bar=True, color_button=False):
         super().__init__(parent)
         self.tag = tag
         self.image_data = None
         self.imagetk = None
-        self._configure_widets(info_bar, color_button)
+        self._configure_widets(image_data, info_bar, color_button)
 
-    def _configure_widets(self, info_bar, color_button):
+    def _configure_widets(self, image_data, info_bar, color_button):
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
         self.canvas_image = self.canvas.create_image(0, 0, anchor='nw')
+        if image_data is not None:
+            self.set_image_data(image_data)
         self.canvas.grid(row=1, column=0)
         if info_bar:
             self.infobar = ImageInfoBar(self, color_button)
@@ -95,7 +97,9 @@ class SimpleImageTk(ttk.Frame):
             self.canvas.bind('<Button>', SimpleImageTk._mouse_action)
             self.canvas.bind('<Leave>', SimpleImageTk._leave_window)
 
-    def set_image_data(self, image_data):
+    def set_image_data(self, image_data, tag=None):
+        if tag is not None:
+            self.tag = tag
         width, height = image_data.shape[1], image_data.shape[0]
         self.canvas.config(width=width-1, height=height-1)
         self.image_data = image_data

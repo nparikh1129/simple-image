@@ -72,8 +72,8 @@ class SimpleImageWindow(tk.Toplevel):
     def tag(self, tag):
         self.image.tag = tag
 
-    def set_image_data(self, image_data):
-        self.image.set_image_data(image_data)
+    def set_image_data(self, image_data, tag=None):
+        self.image.set_image_data(image_data, tag)
 
     def move(self, x, y):
         self.geometry(f'+{x}+{y}')
