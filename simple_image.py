@@ -39,8 +39,9 @@ class SimpleImageWindow(tk.Toplevel):
             name = f'window{next(SimpleImageWindow._window_id)}'
         self.title(title or name)
         self.image = simple_image_tk.SimpleImageTk(self, name)
-        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
         self.image.grid(row=0, column=0)
+        self.protocol("WM_DELETE_WINDOW", lambda arg=self: SimpleImageWindow._window_close(arg))
+
 
     @classmethod
     def update_or_create(cls, name=None, title=None):

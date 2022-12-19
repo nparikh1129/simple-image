@@ -28,7 +28,7 @@ class LabeledValue(ttk.Frame):
 
 class ImageInfoBar(ttk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, color_button=True):
         super().__init__(parent)
 
         self.w_var = tk.StringVar(self, '----')
@@ -47,11 +47,12 @@ class ImageInfoBar(ttk.Frame):
         self.w_val = LabeledValue(self, self.w_var, label_text='W', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
         self.h_val = LabeledValue(self, self.h_var, label_text='H', label_color='#C9C9C9', value_color='#C9C9C9', width=4)
 
-        self.cb_img = ImageTk.PhotoImage(Image.open('resources/colorwheel.png').resize((12, 12)))
-        self.color_button = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=self.cb_img.width(),
-                                      height=self.cb_img.height())
-        self.color_button.create_image(0, 0, anchor='nw', image=self.cb_img)
-        self.color_button.bind('<Button>', lambda event: print(colorchooser.askcolor()))
+        if color_button:
+            self.cb_img = ImageTk.PhotoImage(Image.open('resources/colorwheel.png').resize((12, 12)))
+            self.color_button = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=self.cb_img.width(),
+                                          height=self.cb_img.height())
+            self.color_button.create_image(0, 0, anchor='nw', image=self.cb_img)
+            self.color_button.bind('<Button>', lambda event: print(colorchooser.askcolor()))
 
         self.r_val.grid(row=0, column=0, padx=(8, 4))
         self.g_val.grid(row=0, column=1, padx=(0, 4))
@@ -60,8 +61,10 @@ class ImageInfoBar(ttk.Frame):
         self.y_val.grid(row=0, column=4, padx=(0, 4))
         self.w_val.grid(row=0, column=5, padx=(8, 2))
         self.h_val.grid(row=0, column=6, padx=(0, 0))
-        self.color_button.grid(row=0, column=7, sticky='e', padx=(0, 8))
-        self.grid_columnconfigure(7, weight=1)
+
+        if color_button:
+            self.color_button.grid(row=0, column=7, sticky='e', padx=(0, 8))
+            self.grid_columnconfigure(7, weight=1)
 
     def update_info(self, r='---', g='---', b='---', x='----', y='----', w='----', h='----'):
         self.r_var.set(r)
@@ -74,23 +77,24 @@ class ImageInfoBar(ttk.Frame):
 
 
 class SimpleImageTk(ttk.Frame):
-    def __init__(self, parent, name, tag=None):
+    def __init__(self, parent, name, tag=None, info_bar=True, color_button=True):
         super().__init__(parent)
         self.name = name
         self.tag = tag
         self.image_data = None
         self.imagetk = None
-        self._configure_widets()
+        self._configure_widets(info_bar, color_button)
 
-    def _configure_widets(self):
-        self.infobar = ImageInfoBar(self)
+    def _configure_widets(self, info_bar, color_button):
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
         self.canvas_image = self.canvas.create_image(0, 0, anchor='nw')
-        self.infobar.grid(row=0, column=0, sticky='ew')
         self.canvas.grid(row=1, column=0)
-        self.canvas.bind('<Motion>', SimpleImageTk._mouse_action)
-        self.canvas.bind('<Button>', SimpleImageTk._mouse_action)
-        self.canvas.bind('<Leave>', SimpleImageTk._leave_window)
+        if info_bar:
+            self.infobar = ImageInfoBar(self, color_button)
+            self.infobar.grid(row=0, column=0, sticky='ew')
+            self.canvas.bind('<Motion>', SimpleImageTk._mouse_action)
+            self.canvas.bind('<Button>', SimpleImageTk._mouse_action)
+            self.canvas.bind('<Leave>', SimpleImageTk._leave_window)
 
     def set_image_data(self, image_data):
         width, height = image_data.shape[1], image_data.shape[0]
