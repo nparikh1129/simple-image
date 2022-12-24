@@ -9,41 +9,56 @@ from tkinter import ttk
 import threading
 
 
-class ColorBlindness(ttk.Frame):
+class CVDApp(ttk.Frame):
 
     class Image(object):
-        cache = {}
 
-        def __int__(self, image):
-            self.image = image
-            self.data = image.data
-            self.data_norm = image.image_data_convert(normalize=True)
+        def __init__(self, filename, app):
+            self.app = app
+            self.image = SimpleImage(filename)
+            self.data = self.image.image_data
+            self.data_norm = self.image.image_data_convert(normalize=True)
+            self.cache = {}
+            self.cache_thread = threading.Thread(target=self.populate_cache, daemon=True)
 
-        def generate_image_data_cvd(self, cvd_type, severity):
+        def _generate_data_cvd(self, cvd_type, severity):
             if cvd_type == 'normal':
                 return self.data
             cvd_space = {"name": "sRGB1+CVD", "cvd_type": cvd_type, "severity": severity}
             cvd = cspace_convert(self.data_norm, cvd_space, "sRGB1")
             cvd = np.clip(cvd, 0, 1)
             data_cvd = (cvd * 255).astype(dtype=np.uint8)
-            ColorBlindness.Image.cache[(cvd_type, severity)] = data_cvd
+            self.cache[(cvd_type, severity)] = data_cvd
             return data_cvd
 
         def data_cvd(self, cvd_type='normal', severity=100):
-            data_cvd = ColorBlindness.Image.cache.get((cvd_type, severity))
+            data_cvd = self.cache.get((cvd_type, severity))
             if data_cvd is None:
-                data_cvd = self.generate_image_data_cvd(cvd_type, severity)
+                data_cvd = self._generate_data_cvd(cvd_type, severity)
             return data_cvd
+
+        def generate_severity_range(self):
+            if len(self.cache) >= 100:
+                return
+            print(self.cache_thread.is_alive())
+            self.cache_thread.start()
+
+        def populate_cache(self):
+            for i in range(1, 101):
+                for cvd_type in ['deuteranomaly', 'tritanomaly', 'protanomaly']:
+                    self._generate_data_cvd(cvd_type, i)
+                    # self.progress_var.set(i)
+                    # time.sleep(0.0001)
+                print(i)
+            # callback for done
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.image_data = None
-        self.image_data_cvd = None
-        self.image_data_norm = None
+        self.image = None
         self.severity = 100
 
         self.imagepane = ttk.Frame(self)
-        self.image_window = SimpleImageTk(self.imagepane, image_data=self.image_data)
+        self.image_window = SimpleImageTk(self.imagepane)
         self.slider = SliderWithLabelAndEntry(self.imagepane, label='Severity', from_=0, to=100, value=0, length=400,
                                               command=self.update_severity)
         self.progress_var = tk.IntVar()
@@ -55,11 +70,11 @@ class ColorBlindness(ttk.Frame):
         self.image_chooser_frame = ttk.Frame(self.sidebar)
         self.image_chooser_label = ttk.Label(self.image_chooser_frame, text="Select an Image", font=("-size", 16))
         self.image_dict = {
-            'Rubik\'s cube': 'data/rubiks-cube.png',
-            'French Riviera': 'data/french_riviera.png',
-            'Futuristic city': 'data/futuristic_city.png',
-            'Blue flower': 'data/blue-flower.png',
-            'RG color blindness test': 'data/color_blind_test.png'
+            'Rubik\'s cube': CVDApp.Image('data/rubiks-cube.png', self),
+            'French Riviera': CVDApp.Image('data/french_riviera.png', self),
+            'Futuristic city': CVDApp.Image('data/futuristic_city.png', self),
+            'Blue flower': CVDApp.Image('data/blue-flower.png', self),
+            'RG color blindness test': CVDApp.Image('data/color_blind_test.png', self)
 
         }
         self.image_chooser = ttk.Combobox(self.image_chooser_frame, state="readonly", values=list(self.image_dict.keys()))
@@ -80,32 +95,29 @@ class ColorBlindness(ttk.Frame):
         self.button_prot.grid(row=3, column=0, pady=(10, 10))
         self.button_trit.grid(row=4, column=0, pady=(10, 10))
 
+        self.severity_toggle = ttk.Checkbutton(self.sidebar, text='Show severity range', command=self.severity_toggled)
+        self.severity_toggle.state(('!alternate',))
+
         self.close_button = ttk.Button(self.sidebar, text='Close', command=parent.destroy)
 
         self.imagepane.grid(row=0, column=1, padx=(20, 20), pady=(7, 20))
         self.image_window.grid(row=0, column=0)
-        # self.slider.grid(row=1, column=0, pady=(20, 20))
-        # self.progress_bar.grid(row=2, column=0)
+        self.slider.grid(row=1, column=0, pady=(20, 20))
+        self.progress_bar.grid(row=2, column=0)
 
         self.sidebar.grid(row=0, column=0, sticky='ns')
-        self.sidebar.rowconfigure(1, weight=1, minsize=300)
-        self.sidebar_seperator.grid(row=0, column=1, rowspan=3, sticky='ns')
+        self.sidebar.rowconfigure(2, weight=1, minsize=300)
+        self.sidebar_seperator.grid(row=0, column=1, rowspan=4, sticky='ns')
         self.image_chooser_frame.grid(row=0, column=0, pady=(30, 50))
-        self.cvd_types_frame.grid(row=1, column=0, padx=(20, 20), sticky='n')
-        self.close_button.grid(row=2, column=0, pady=(0, 20))
+        self.cvd_types_frame.grid(row=1, column=0, padx=(20, 20), pady=(0, 30))
+        self.severity_toggle.grid(row=2, column=0, sticky='n')
+        self.close_button.grid(row=3, column=0, pady=(0, 20))
 
         self.cvd_type = 'normal'
         self.image_selected()
 
-        # self.thread = threading.Thread(target=self.populate_cache, daemon=True)
-        # self.thread.start()
-
     def image_selected(self, *args):
-        image_filename = self.image_dict[self.image_chooser.get()]
-        img = SimpleImage(image_filename)
-        self.image_data = img.image_data.copy()
-        self.image_data_cvd = self.image_data
-        self.image_data_norm = img.image_data_convert(normalize=True)
+        self.image = self.image_dict[self.image_chooser.get()]
         self.cvd_type = 'normal'
         self.update_cvd_type(self.cvd_type)
 
@@ -129,42 +141,19 @@ class ColorBlindness(ttk.Frame):
         self.cvd_type = cvd_type
         self.update_image()
 
-    # def populate_cache(self):
-    #     for i in range(0, 101):
-    #         for cvd_type in ['deuteranomaly', 'tritanomaly', 'protanomaly']:
-    #             if ColorBlindness.image_cache.get(i) is None:
-    #                 self.generate_cb_image(cvd_type, i)
-    #             self.progress_var.set(i)
-    #             time.sleep(0.001)
-    #
-    #     self.progress_bar.destroy()
-    #     print('done')
-
-    def generate_cb_image(self, cvd_type, severity):
-        if cvd_type == 'normal':
-            return self.image_data
-        cvd_space = {"name": "sRGB1+CVD", "cvd_type": cvd_type, "severity": severity}
-        img_cb = cspace_convert(self.image_data_norm, cvd_space, "sRGB1")
-        img_cb = np.clip(img_cb, 0, 1)
-        image_data_cvd = (img_cb*255).astype(dtype=np.uint8)
-        # ColorBlindness.image_cache[(cvd_type, severity)] = image_data_cvd
-        return image_data_cvd
-
     def update_severity(self, severity):
         self.severity = int(severity)
         self.update_image()
 
     def update_image(self):
-        if self.cvd_type == 'normal':
-            self.image_window.set_image_data(self.image_data)
-            return
-        # self.image_data_cvd = ColorBlindness.image_cache.get((self.cvd_type, self.severity))
-        # if self.image_data_cvd is None:
-        self.image_data_cvd = self.generate_cb_image(self.cvd_type, self.severity)
-        self.image_window.set_image_data(self.image_data_cvd)
+        image_data_cvd = self.image.data_cvd(self.cvd_type, self.severity)
+        self.image_window.set_image_data(image_data_cvd)
 
-
-
+    def severity_toggled(self):
+        if 'selected' in self.severity_toggle.state():
+            self.image.generate_severity_range()
+        else:
+            print('unselected')
 
 def main():
     # img = SimpleImage("data/girl_shadows_gs.png")
@@ -177,9 +166,10 @@ def main():
     # img = SimpleImage("data/t-rex.png")
 
     root = simple_image_tk.show_tk_root(title='Color Blindness Comparison')
-    cb = ColorBlindness(root)
+    cb = CVDApp(root)
     cb.grid(row=0, column=0)
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
