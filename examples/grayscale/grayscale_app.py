@@ -1,4 +1,3 @@
-import tkinter as tk
 from tkinter import ttk
 from simple_image import SimpleImage
 import simple_image_tk
@@ -26,7 +25,7 @@ class GrayscaleApp(object):
         self.button_img_lum = ttk.Button(self.buttons_frame, text='Luma 601', command=self.luma)
         self.button_img_lab = ttk.Button(self.buttons_frame, text='CIELAB L*', command=self.lab_l)
         # Buttons bar buttons
-        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.buttons_bar = simple_image_tk.ButtonBar(self.root)
         self.button_close = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
 
         self.buttons_label.grid(row=0, column=0, pady=(15, 5), padx=(25, 25))

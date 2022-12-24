@@ -31,13 +31,13 @@ class ImageInfoBar(ttk.Frame):
     def __init__(self, parent, color_button=True):
         super().__init__(parent)
 
-        self.w_var = tk.StringVar(self, '----')
-        self.h_var = tk.StringVar(self, '----')
-        self.x_var = tk.StringVar(self, '----')
-        self.y_var = tk.StringVar(self, '----')
         self.r_var = tk.StringVar(self, '---')
         self.g_var = tk.StringVar(self, '---')
         self.b_var = tk.StringVar(self, '---')
+        self.x_var = tk.StringVar(self, '----')
+        self.y_var = tk.StringVar(self, '----')
+        self.w_var = tk.StringVar(self, '----')
+        self.h_var = tk.StringVar(self, '----')
 
         self.r_val = LabeledValue(self, self.r_var, label_text='R', label_color='#FF4800', value_color='#C9C9C9', width=3)
         self.g_val = LabeledValue(self, self.g_var, label_text='G', label_color='#7BE300', value_color='#C9C9C9', width=3)
@@ -75,6 +75,10 @@ class ImageInfoBar(ttk.Frame):
         self.w_var.set(w)
         self.h_var.set(h)
 
+    def update_dimensions(self, w, h):
+        self.w_var.set(w)
+        self.h_var.set(h)
+
 
 class SimpleImageTk(ttk.Frame):
     def __init__(self, parent, image_data=None, tag=None, info_bar=True, color_button=False):
@@ -82,6 +86,7 @@ class SimpleImageTk(ttk.Frame):
         self.tag = tag
         self.image_data = None
         self.imagetk = None
+        self.infobar = None
         self._configure_widets(image_data, info_bar, color_button)
 
     def _configure_widets(self, image_data, info_bar, color_button):
@@ -105,6 +110,8 @@ class SimpleImageTk(ttk.Frame):
         self.image_data = image_data
         self.imagetk = ImageTk.PhotoImage(Image.fromarray(self.image_data))
         self.canvas.itemconfig(self.canvas_image, image=self.imagetk)
+        if self.infobar:
+            self.infobar.update_dimensions(width, height)
 
     @classmethod
     def _mouse_action(cls, event):
@@ -123,7 +130,7 @@ class SimpleImageTk(ttk.Frame):
         window.infobar.update_info(w=w, h=h)
 
 
-class ButtonsBar(ttk.Frame):
+class ButtonBar(ttk.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -160,7 +167,7 @@ class SliderWithLabelAndEntry(ttk.Frame):
         self.command = command
 
         self.label = ttk.Label(self, text=label+':', font=("-size", 13))
-        self.scale = ttk.Scale(self, from_=from_, to=to, length=self.length, variable=self._var)
+        self.scale = ttk.Scale(self, from_=from_, to=to, length=self.length, variable=self._var, style='Tick.TScale')
         self.entry = ttk.Entry(self, textvariable=self._var, width=3, justify=tk.RIGHT, font=("-size", 10))
 
         self.label.grid(row=0, column=0, sticky='e')

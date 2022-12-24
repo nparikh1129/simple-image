@@ -26,7 +26,7 @@ class ChromaKeyApp(object):
         self.label_u = ttk.Label(self.root, text="Upper Threshold", font=("-size", 16))
         self.color_sliders_hsb_u = simple_image_tk.ColorSlidersHSB(self.root, h=self.hsb_u[0], s=self.hsb_u[1],
                                                                  b=self.hsb_u[2], command=self.update_hsb_upper)
-        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.buttons_bar = simple_image_tk.ButtonBar(self.root)
         self.swap_button = ttk.Button(self.buttons_bar, text='Compare Images', command=self.swap_images)
         self.close_button = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
 

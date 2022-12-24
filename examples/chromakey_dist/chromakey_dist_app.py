@@ -23,7 +23,7 @@ class ChromaKeyDistanceApp(object):
         self.distance_label = ttk.Label(self.root, text="Color Difference", font=("-size", 16))
         self.distance_slider = SliderWithLabelAndEntry(self.root, label='Distance', from_=0, to=442, value=0,
                                                        command=self.set_color_dist)
-        self.buttons_bar = simple_image_tk.ButtonsBar(self.root)
+        self.buttons_bar = simple_image_tk.ButtonBar(self.root)
         self.run_button = ttk.Button(self.buttons_bar, text="Run Chromakey", command=self.run_chromakey)
         self.swap_button = ttk.Button(self.buttons_bar, text='Compare Images', command=self.swap_images)
         self.close_button = ttk.Button(self.buttons_bar, text='Close', command=self.root.destroy)
