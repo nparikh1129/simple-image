@@ -20,6 +20,10 @@ class CVDApp(ttk.Frame):
             self.data_norm = self.image.image_data_convert(normalize=True)
             self.cache = {}
             self.cache_thread = threading.Thread(target=self.populate_cache, daemon=True)
+            self.progress_var = tk.IntVar()
+            self.progress_bar = ttk.Progressbar(app.severity_frame, variable=self.progress_var, length=400)
+            self.slider = SliderWithLabelAndEntry(app.severity_frame, label='Severity', from_=0, to=100, value=0,
+                                                  length=400, command=app.update_severity)
 
         def _generate_data_cvd(self, cvd_type, severity):
             if cvd_type == 'normal':
@@ -38,19 +42,21 @@ class CVDApp(ttk.Frame):
             return data_cvd
 
         def generate_severity_range(self):
-            if len(self.cache) >= 100:
+            print(self.caching_completed(), self.cache_thread.is_alive())
+            if self.caching_completed() or self.cache_thread.is_alive():
                 return
-            print(self.cache_thread.is_alive())
             self.cache_thread.start()
+
+        def caching_completed(self):
+            return int(self.progress_var.get()) >= 100
 
         def populate_cache(self):
             for i in range(1, 101):
                 for cvd_type in ['deuteranomaly', 'tritanomaly', 'protanomaly']:
                     self._generate_data_cvd(cvd_type, i)
-                    # self.progress_var.set(i)
-                    # time.sleep(0.0001)
-                print(i)
-            # callback for done
+                self.progress_var.set(i)
+            print(int(self.progress_var.get()))
+            self.app.update_severity_frame()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -59,10 +65,9 @@ class CVDApp(ttk.Frame):
 
         self.imagepane = ttk.Frame(self)
         self.image_window = SimpleImageTk(self.imagepane)
-        self.slider = SliderWithLabelAndEntry(self.imagepane, label='Severity', from_=0, to=100, value=0, length=400,
-                                              command=self.update_severity)
-        self.progress_var = tk.IntVar()
-        self.progress_bar = ttk.Progressbar(self.imagepane, variable=self.progress_var, length=400)
+        self.severity_frame = ttk.Frame(self.imagepane)
+
+
 
         self.sidebar = ttk.Frame(self)
         self.sidebar_seperator = ttk.Separator(self.sidebar, orient=tk.VERTICAL)
@@ -95,23 +100,22 @@ class CVDApp(ttk.Frame):
         self.button_prot.grid(row=3, column=0, pady=(10, 10))
         self.button_trit.grid(row=4, column=0, pady=(10, 10))
 
-        self.severity_toggle = ttk.Checkbutton(self.sidebar, text='Show severity range', command=self.severity_toggled)
+        self.severity_toggle = ttk.Checkbutton(self.sidebar, text='Show severity range', command=self.update_severity_frame)
         self.severity_toggle.state(('!alternate',))
 
         self.close_button = ttk.Button(self.sidebar, text='Close', command=parent.destroy)
 
         self.imagepane.grid(row=0, column=1, padx=(20, 20), pady=(7, 20))
         self.image_window.grid(row=0, column=0)
-        self.slider.grid(row=1, column=0, pady=(20, 20))
-        self.progress_bar.grid(row=2, column=0)
+
 
         self.sidebar.grid(row=0, column=0, sticky='ns')
-        self.sidebar.rowconfigure(2, weight=1, minsize=300)
+        self.sidebar.rowconfigure(3, weight=1, minsize=100)
         self.sidebar_seperator.grid(row=0, column=1, rowspan=4, sticky='ns')
         self.image_chooser_frame.grid(row=0, column=0, pady=(30, 50))
         self.cvd_types_frame.grid(row=1, column=0, padx=(20, 20), pady=(0, 30))
         self.severity_toggle.grid(row=2, column=0, sticky='n')
-        self.close_button.grid(row=3, column=0, pady=(0, 20))
+        self.close_button.grid(row=3, column=0, pady=(80, 20), sticky='n')
 
         self.cvd_type = 'normal'
         self.image_selected()
@@ -120,6 +124,7 @@ class CVDApp(ttk.Frame):
         self.image = self.image_dict[self.image_chooser.get()]
         self.cvd_type = 'normal'
         self.update_cvd_type(self.cvd_type)
+        self.update_severity_frame()
 
     def update_cvd_type(self, cvd_type):
         if cvd_type == 'normal':
@@ -141,19 +146,26 @@ class CVDApp(ttk.Frame):
         self.cvd_type = cvd_type
         self.update_image()
 
-    def update_severity(self, severity):
-        self.severity = int(severity)
-        self.update_image()
-
     def update_image(self):
         image_data_cvd = self.image.data_cvd(self.cvd_type, self.severity)
         self.image_window.set_image_data(image_data_cvd)
 
-    def severity_toggled(self):
+    def update_severity(self, severity):
+        self.severity = int(severity)
+        self.update_image()
+
+    def update_severity_frame(self):
         if 'selected' in self.severity_toggle.state():
-            self.image.generate_severity_range()
+            self.severity_frame.grid(row=1, column=0, pady=(30, 5))
+            if self.image.caching_completed():
+                self.image.progress_bar.grid_remove()
+                self.image.slider.grid(row=0, column=0)
+            else:
+                self.image.slider.grid_remove()
+                self.image.progress_bar.grid(row=0, column=0)
+                self.image.generate_severity_range()
         else:
-            print('unselected')
+            self.severity_frame.grid_remove()
 
 def main():
     # img = SimpleImage("data/girl_shadows_gs.png")
