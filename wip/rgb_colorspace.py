@@ -14,7 +14,7 @@ from simple_image_tk import SliderWithLabelAndEntry, ColorGradientHSB
 def main():
     size = 500
 
-    root = simple_image_tk.show_tk_root()
+    root = simple_image_tk.root_()
     color_box = simple_image_tk.ColorBoxRGB(root, size)
     color_box.set_color(0, 0, 0)
 

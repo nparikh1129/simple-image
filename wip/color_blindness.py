@@ -7,6 +7,10 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 
+# TODO: Load images into ImagePane, don't swap out the entire frame, refactor individual image code into own class
+# TODO: Resize large images to reasonable dims for severity range
+# TODO: Synchronize UI and Image panes with StringVar/IntVar for single source of truth and bidirectional updates
+
 
 class ImagePane(ttk.Frame):
 
@@ -182,9 +186,10 @@ class CVDApp(ttk.Frame):
 
 
 def main():
-    root = simple_image_tk.show_tk_root(title='Color Blindness Comparison')
+    root = simple_image_tk.root_(title='Color Blindness Comparison', show=False)
     app = CVDApp(root)
     app.grid(row=0, column=0)
+    root.deiconify()
     root.mainloop()
 
 

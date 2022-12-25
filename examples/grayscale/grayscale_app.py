@@ -14,7 +14,7 @@ class GrayscaleApp(object):
         self.gs_lab_l = None
         self.window_name = 'image'
 
-        self.root = simple_image_tk.show_tk_root(title="Grayscale")
+        self.root = simple_image_tk.root_(title="Grayscale")
 
         self.buttons_label = ttk.Label(self.root, text="Grayscale Algorithms", font=("-size", 16))
         # Algorithm buttons

@@ -14,7 +14,7 @@ from simple_image_tk import SliderWithLabelAndEntry, ColorGradientHSB
 class HueRangeApp(object):
 
     def __init__(self):
-        self.root = simple_image_tk.show_tk_root(title="Hue Range")
+        self.root = simple_image_tk.root_(title="Hue Range")
         self._h_lower = tk.IntVar()
         self._h_upper = tk.IntVar()
         self._h_lower.trace('w', self._set_h_range)

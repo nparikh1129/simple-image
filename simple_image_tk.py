@@ -366,10 +366,11 @@ class ColorSlidersRGB(ttk.Frame):
         self.slider_b.set(round(b))
 
 
-def show_tk_root(title=None):
+def root_(title=None, show=True):
     if title:
         root.title(title)
-    root.deiconify()
+    if show:
+        root.deiconify()
     return root
 
 

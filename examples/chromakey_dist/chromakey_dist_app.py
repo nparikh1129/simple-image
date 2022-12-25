@@ -16,7 +16,7 @@ class ChromaKeyDistanceApp(object):
         self.color_bg = SimpleColor(0, 0, 0)
         self.dist_max = 0
 
-        self.root = simple_image_tk.show_tk_root(title="Chroma Key - Color Distance")
+        self.root = simple_image_tk.root_(title="Chroma Key - Color Distance")
 
         self.color_label = ttk.Label(self.root, text="Target Color", font=("-size", 16))
         self.color_sliders = ColorSlidersRGB(self.root, command=self.set_color_bg)

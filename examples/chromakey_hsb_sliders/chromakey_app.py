@@ -19,7 +19,7 @@ class ChromaKeyApp(object):
         self.window_name = 'Chroma Screen Image'
 
         # UI elements config
-        self.root = simple_image_tk.show_tk_root('Threshold Selector')
+        self.root = simple_image_tk.root_('Threshold Selector')
         self.label_l = ttk.Label(self.root, text="Lower Threshold", font=("-size", 16))
         self.color_sliders_hsb_l = simple_image_tk.ColorSlidersHSB(self.root, h=self.hsb_l[0], s=self.hsb_l[1],
                                                                  b=self.hsb_l[2], command=self.update_hsb_lower)
