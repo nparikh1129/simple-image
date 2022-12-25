@@ -1,4 +1,3 @@
-import time
 from colorspacious import cspace_convert
 import numpy as np
 from simple_image import SimpleImage
@@ -22,11 +21,15 @@ class ImagePane(ttk.Frame):
         #  Configure widgets
         self.image_window = SimpleImageTk(self)
         self.severity_frame = ttk.Frame(self)
+        self.progress_bar_frame = ttk.Frame(self.severity_frame)
+        self.progress_bar_label = ttk.Label(self.progress_bar_frame, text='Processing severity range...', font=("-size", 13))
         self.progress_var = tk.IntVar()
-        self.progress_bar = ttk.Progressbar(self.severity_frame, variable=self.progress_var, length=400)
+        self.progress_bar = ttk.Progressbar(self.progress_bar_frame, variable=self.progress_var, length=400)
         self.slider = SliderWithLabelAndEntry(self.severity_frame, label='Severity', from_=1, to=100, value=1,
                                               length=400, command=self.update_image)
         self.image_window.grid(row=0, column=0)
+        self.progress_bar_label.grid(row=0, column=0)
+        self.progress_bar.grid(row=1, column=0)
 
     def update_image(self, *args):
         image_data_cvd = self.data_cvd(self.cvd_type)
@@ -85,10 +88,10 @@ class ImagePane(ttk.Frame):
     def update_severity_frame(self):
         self.severity_frame.grid(row=1, column=0, pady=(30, 5))
         if self.caching_completed():
-            self.progress_bar.grid_remove()
+            self.progress_bar_frame.grid_remove()
             self.slider.grid(row=0, column=0)
         else:
-            self.progress_bar.grid(row=0, column=0)
+            self.progress_bar_frame.grid(row=0, column=0)
             self.generate_severity_range()
 
 
@@ -102,7 +105,8 @@ class CVDApp(ttk.Frame):
             'French Riviera': ImagePane(self, 'data/french_riviera.png'),
             'Futuristic city': ImagePane(self, 'data/futuristic_city.png'),
             'Blue flower': ImagePane(self, 'data/blue-flower.png'),
-            'RG color blindness test': ImagePane(self, 'data/color_blind_test.png')
+            'Color spectrum': ImagePane(self, 'data/color_spectrum.png'),
+            'RG color blindness test': ImagePane(self, 'data/color_blind_test.png'),
         }
 
         self.sidebar = ttk.Frame(self)
@@ -178,8 +182,6 @@ class CVDApp(ttk.Frame):
 
 
 def main():
-    # img = SimpleImage("data/color_spectrum.png")
-
     root = simple_image_tk.show_tk_root(title='Color Blindness Comparison')
     app = CVDApp(root)
     app.grid(row=0, column=0)
