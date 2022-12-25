@@ -13,7 +13,6 @@ root.geometry("+0+0")
 root.tk.call("source", "resources/azure-ttk-theme/azure.tcl")
 root.tk.call("set_theme", "dark")
 root.withdraw()
-root.withdraw()
 
 
 class LabeledValue(ttk.Frame):
